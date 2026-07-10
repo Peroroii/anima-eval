@@ -1,7 +1,7 @@
 {
-  "name": "anima-eval",
-  "version": "0.1.0",
-  "description": "Deterministic behavioral audit harness for LLM agent transcripts — structural signature, rigidity trajectory, and sandbagging/eval-gaming detection. No model access, no LLM calls, reproducible.",
+  "name": "@af199/anima-eval",
+  "version": "0.2.0",
+  "description": "Deterministic behavioral audit harness for LLM agent transcripts \u2014 structural signature, rigidity trajectory, and sandbagging/eval-gaming detection. No model access, no LLM calls, reproducible.",
   "main": "index.js",
   "bin": {
     "anima-eval": "./cli.js"
@@ -10,7 +10,8 @@
     "index.js",
     "cli.js",
     "README.md",
-    "example_transcript.json"
+    "example_transcript.json",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "jest",
@@ -46,15 +47,18 @@
     "node": ">=16"
   },
   "devDependencies": {
-    "jest": "^30.0.0"
+    "jest": "^30.4.2"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/Peroroii/anima-eval.git"
   },
-  "author": "Ariel Fernández",
+  "author": "Ariel Fern\u00e1ndez",
   "bugs": {
     "url": "https://github.com/Peroroii/anima-eval/issues"
   },
-  "homepage": "https://github.com/Peroroii/anima-eval#readme"
+  "homepage": "https://github.com/Peroroii/anima-eval#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
