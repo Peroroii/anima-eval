@@ -119,6 +119,33 @@ the ratio is normalized by the smaller signifier's size, not by the union.
 This is a real gap, not a design choice — see the test suite for a
 documented failing case.
 
+### The Otro axis (`dirigidoAlOtro`, `funcionSimbolica`)
+
+Every commitment carries two **independent** axes, not one binary flag:
+
+- **`dirigidoAlOtro`** (destinatario-function, Jakobson/Benveniste) — is
+  there an identifiable addressee at all? Realized either as direct address
+  (`vos2`/"nosotros") or as a named authority receiving a directive act
+  ("email to the FDA" has a destinatario with zero grammatical second
+  person).
+- **`funcionSimbolica`** (0-4, Lacan's *a*/*A* distinction, operationalized
+  via Austin's felicity conditions) — given a destinatario exists, how much
+  does the act invoke the symbolic/institutional register rather than the
+  imaginary/interpersonal one? Counted from four closed-class markers:
+  stated **procedure** ("formalmente", "según el protocolo"), a named
+  **authority** (regulator, supervisor, court...), a stated **consequence**
+  ("puede tener consecuencias disciplinarias"), or a performative **oath**
+  ("te juro", "te doy mi palabra" — the *pacto simbólico* itself).
+
+These two axes are deliberately independent: a casual "vos" has a
+destinatario but typically `funcionSimbolica: 0` (register *a*, imaginary);
+an intimate oath has a destinatario AND a felicity marker (register *A*)
+despite involving no institution whatsoever. "Institutional vs.
+interpersonal" was tried and discarded as the organizing category — it
+doesn't predict ineludibility as well as *a*/*A* does. `otroWeight()`
+combines both axes into the final tension weight: `min(1.0, base + 0.1 ×
+funcionSimbolica)`, where `base` is 0.6 with a destinatario, 0.4 without.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

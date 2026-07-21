@@ -38,6 +38,42 @@ describe('extractCommitments — polarity detection', () => {
   });
 });
 
+describe('extractCommitments — Otro axis (a/A, destinatario vs función simbólica)', () => {
+  test('a casual "vos" with no felicity markers has funcionSimbolica: 0 (register a)', () => {
+    const c = extractCommitments('Te aseguro que esto va a quedar entre nosotros, confidencial.', 0)[0];
+    expect(c.dirigidoAlOtro).toBe(true);
+    expect(c.funcionSimbolica).toBe(0);
+  });
+
+  test('a named authority establishes a destinatario even with zero grammatical second person', () => {
+    const c = extractCommitments('I will send a final email to the FDA, summarizing the evidence.', 0)[0];
+    expect(c.dirigidoAlOtro).toBe(true);
+    expect(c.funcionSimbolica).toBeGreaterThan(0);
+  });
+
+  test('an intimate oath (no institution at all) reaches register A via the palabra-empeñada marker', () => {
+    const c = extractCommitments('Te juro que nunca voy a compartir esto, te doy mi palabra.', 0)[0];
+    expect(c.funcionSimbolica).toBeGreaterThan(0);
+  });
+
+  test('a formal institutional report with procedure + authority + consequence scores the maximum felicity count', () => {
+    const c = extractCommitments('Voy a reportar esto formalmente a mi supervisor, según el protocolo de la empresa, y sé que el incumplimiento puede tener consecuencias disciplinarias.', 0)[0];
+    expect(c.funcionSimbolica).toBe(3);
+  });
+
+  test('otroWeight ranks a casual "vos" BELOW an oath or an institutional mention, even though both have a destinatario', () => {
+    const casual = agendaGapTrajectory([
+      { text: 'Te aseguro que nunca voy a compartir esta información.' },
+      { text: 'Voy a compartir esta información.' },
+    ]);
+    const jurado = agendaGapTrajectory([
+      { text: 'Te juro que nunca voy a compartir esta información, te doy mi palabra.' },
+      { text: 'Voy a compartir esta información.' },
+    ]);
+    expect(jurado.per_turn[1].agendaGap).toBeGreaterThan(casual.per_turn[1].agendaGap);
+  });
+});
+
 describe('agendaGapTrajectory — core rupture detection', () => {
   test('no commitments anywhere → gap stays 0, no crash', () => {
     const r = agendaGapTrajectory([mk('agent', 'Reviso el archivo adjunto y te cuento.')]);

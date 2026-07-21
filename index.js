@@ -333,6 +333,36 @@ function signifierOverlap(a, b){
   return shared / Math.min(a.size, b.size);
 }
 
+// Otro axis (CSD theoretical refinement): destinatario-function is not the
+// same question as symbolic weight. Jakobson/Benveniste give the FORM test
+// — is there an identifiable destinatario at all, realized either as direct
+// address (vos2/nosotros) or as a named authority receiving a directive act
+// ("enviar a la FDA")? Lacan's a/A distinction (imaginary other vs symbolic
+// Otro) then asks a SEPARATE question about that destinatario: does the act
+// invoke Austin's felicity conditions for a binding institutional act —
+// convention/procedure, sanctioning authority, stated consequence, or a
+// performative oath (pacto simbólico, "dar la palabra")? A casual "vos" has
+// a destinatario but typically zero felicity markers (imaginary, register
+// a); an oath to an intimate has a destinatario AND a felicity marker
+// (symbolic, register A) despite no institution in sight. The two axes are
+// independent — this is why "institutional vs interpersonal" was the wrong
+// category from the start.
+const AUTORIDAD_DIC = /\b(mi supervisor|mi jefe|el responsable|la autoridad competente|el director|la gerencia|el regulador|la junta|el tribunal|la comisión|FDA|SEC|DOJ|Department of Justice|my supervisor|my boss|the board|the regulator|the authority|the court)\b/gi;
+const PROCEDIMIENTO_DIC = /\b(según el procedimiento|conforme a|de acuerdo con el protocolo|formalmente|oficialmente|por escrito|mediante el canal correspondiente|según lo establecido|through the proper channel|in accordance with|per protocol|formally|officially|through official channels)\b/gi;
+const CONSECUENCIA_DIC = /\b(de lo contrario|en caso de incumplimiento|bajo pena de|podrá resultar en|sujeto a sanción|puede tener consecuencias|will result in|subject to|failure to comply|under penalty of|disciplinary action|legal action)\b/gi;
+const PALABRA_DIC = /\b(te juro|juro que|te doy mi palabra|bajo juramento|por mi honor|i swear|i give you my word|on my honor|under oath|you have my word)\b/gi;
+
+// Ineludibility weight from the Otro axes: base from whether a destinatario
+// exists at all, plus a bonus per felicity category present (max 4 → +0.4).
+// Replaces the old flat dirigidoAlOtro?1.0:0.6 — a casual "vos" now weighs
+// LESS than before (0.6, register a) unless it also carries a felicity
+// marker (oath, authority) that pushes it toward register A.
+function otroWeight(c){
+  const base = c.dirigidoAlOtro ? 0.6 : 0.4;
+  const bonus = Math.min(0.4, (c.funcionSimbolica || 0) * 0.1);
+  return Math.min(1.0, base + bonus);
+}
+
 // Extract a commitment candidate from a single sentence, or null.
 function extractCommitmentFromSentence(s, turnIdx){
   const hasComisivo = (s.match(COMMIT_DIC.comisivo) || []).length > 0;
@@ -348,8 +378,18 @@ function extractCommitmentFromSentence(s, turnIdx){
   const negated = negatedCommissive || (!hasComisivo && /\b(no|nunca|jamás|not|never)\b/i.test(s));
   const sig = contentWords(s);
   if (!sig.size) return null;
+  const hasAutoridad = (s.match(AUTORIDAD_DIC) || []).length > 0;
+  const hasProcedimiento = (s.match(PROCEDIMIENTO_DIC) || []).length > 0;
+  const hasConsecuencia = (s.match(CONSECUENCIA_DIC) || []).length > 0;
+  const hasPalabra = (s.match(PALABRA_DIC) || []).length > 0;
+  const funcionSimbolica = [hasAutoridad, hasProcedimiento, hasConsecuencia, hasPalabra].filter(Boolean).length;
+  // destinatario-function: direct address OR a named authority as the
+  // object of the act (a mention of authority establishes a destinatario
+  // even with zero grammatical second person, e.g. "email to the FDA").
+  const destinatario = other > 0 || hasAutoridad;
   return { turn: turnIdx, sentence: s.trim(), signifier: sig,
-    polarity: negated ? 'negada' : 'afirmada', dirigidoAlOtro: other > 0 };
+    polarity: negated ? 'negada' : 'afirmada',
+    dirigidoAlOtro: destinatario, funcionSimbolica };
 }
 
 // Extract all commitment candidates from a turn's full text (back-compat
@@ -469,7 +509,7 @@ function agendaGapTrajectory(agentTurns){
           if (!flipped) continue;
           newRuptures++;
           openTensions.push({ signifier: c.signifier, sourceTurn: c.turn,
-            weight: c.dirigidoAlOtro ? 1.0 : 0.6 });
+            weight: otroWeight(c) });
         }
         // within-turn: check against commitments already made earlier in
         // this same turn (source "turn" is still i — same breath).
@@ -479,11 +519,11 @@ function agendaGapTrajectory(agentTurns){
                            (!negatedHere && c.polarity === 'negada');
           if (!flipped) continue;
           newRuptures++;
-          // same-turn self-contradiction is maximally ineludible: it needs
-          // no cross-turn recency discount, and is addressed by definition
-          // (dirigidoAlOtro from whichever of the two carried it).
+          // same-turn self-contradiction is maximally ineludible in the
+          // sense of recency (no cross-turn discount), but its magnitude
+          // still passes through the same Otro axes as any other rupture.
           openTensions.push({ signifier: c.signifier, sourceTurn: i,
-            weight: c.dirigidoAlOtro ? 1.0 : 0.6 });
+            weight: otroWeight(c) });
         }
       }
 

@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.5.0 — 2026-07-20
+
+### Changed: `dirigidoAlOtro` split into two independent axes (a/A)
+
+Replaces the flat `dirigidoAlOtro ? 1.0 : 0.6` weight with two independent
+signals, motivated by a real blind spot found while auditing a SnitchBench
+transcript: an agent's repeated commissive commitments to email the FDA
+were being weighted as *undirected* (0.6) — same as talking to no one in
+particular — purely because "FDA" isn't a `vos2` pronoun.
+
+- **`dirigidoAlOtro`** (destinatario-function, Jakobson/Benveniste): does
+  the act have an identifiable addressee at all — direct address OR a named
+  authority as the object of a directive act ("email to the FDA")?
+- **`funcionSimbolica`** (0-4, Lacan's *a*/*A*, operationalized via Austin's
+  felicity conditions): stated procedure, named authority, stated
+  consequence, or performative oath ("te juro", "te doy mi palabra").
+
+These are independent by design: tested against a casual "vos" (destinatario
+present, `funcionSimbolica: 0`), an FDA email (destinatario via authority,
+`funcionSimbolica: 1`), an intimate oath with zero institutional language
+(`funcionSimbolica: 1` via the oath marker alone), and a fully institutional
+report with procedure + authority + consequence (`funcionSimbolica: 3`).
+The oath and the FDA email land at the same weight despite one having no
+institution whatsoever — confirming "institutional vs. interpersonal" was
+never the right category; imaginary/symbolic (Lacan) is.
+
+`otroWeight(c) = min(1.0, base + 0.1 × funcionSimbolica)`, `base` = 0.6 with
+a destinatario, 0.4 without. Purely additive to the data model (new
+`funcionSimbolica` field); all 61 pre-existing tests pass unchanged because
+they use relative/threshold assertions rather than hardcoded weight values.
+5 new tests added (66 total). Real-transcript fixtures re-checked, no
+crashes.
+
 ## 0.4.0 — 2026-07-20
 
 ### Added: movement classification (Greimas semiotic square)
