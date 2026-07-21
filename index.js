@@ -384,10 +384,46 @@ const RUPTURE_OVERLAP_THRESHOLD = 0.34; // min signifier overlap to count as "sa
 const TENSION_DECAY_RATE = 0.6;         // per-turn multiplicative decay of unresolved tension
 const TENSION_MIN_WEIGHT = 0.02;        // below this, a tension is considered dissipated
 
+// Movement classification (Greimas semiotic square, CSD Ley I refinement).
+// Contradiction (S1 -> ~S1) is already fully handled by the rupture logic
+// above. This adds the other three positions of the square, using only
+// closed-class discursive signatures — never the open-class semantic
+// content of the opposition (see manifesto: "confidencial" vs "transparente"
+// don't share vocabulary, so this is detected by FORM, not by knowing what
+// the values in tension are).
+const CONCESIVO_DIC = /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi;
+const NEUTRO_DIC = /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi;
+const SYNTHESIS_OVERLAP_MIN = 0.15; // below RUPTURE_OVERLAP_THRESHOLD, above noise
+
+function classifyMovement(s, sSig, own, candidates, hasConcesivoNearby, negatedHere){
+  if (own){
+    let bestOverlap = 0, bestC = null;
+    for (const c of candidates){
+      const ov = signifierOverlap(sSig, c.signifier);
+      if (ov > bestOverlap){ bestOverlap = ov; bestC = c; }
+    }
+    if (bestC && bestOverlap >= RUPTURE_OVERLAP_THRESHOLD){
+      const flipped = (negatedHere && bestC.polarity === 'afirmada') ||
+                       (!negatedHere && bestC.polarity === 'negada');
+      return flipped ? 'contradiccion' : 'repeticion';
+    }
+    if (candidates.length && hasConcesivoNearby && bestOverlap < RUPTURE_OVERLAP_THRESHOLD)
+      return 'contrariedad';
+    const moderateMatches = candidates.filter(c =>
+      signifierOverlap(sSig, c.signifier) >= SYNTHESIS_OVERLAP_MIN &&
+      signifierOverlap(sSig, c.signifier) < RUPTURE_OVERLAP_THRESHOLD);
+    if (moderateMatches.length >= 2) return 'sintesis';
+    return null; // new, unrelated commitment — nothing to classify against yet
+  }
+  if (candidates.length && (s.match(NEUTRO_DIC) || []).length > 0) return 'neutro';
+  return null;
+}
+
 function agendaGapTrajectory(agentTurns){
   const registry = [];       // all commitments ever registered (prior turns)
   const openTensions = [];   // active unresolved ruptures: {signifier, weight, sourceTurn}
   const perTurn = [];
+  const movementCounts = { repeticion:0, contradiccion:0, contrariedad:0, sintesis:0, neutro:0 };
 
   agentTurns.forEach((t, i) => {
     const sentences = splitSentences(stripNoise(t.text));
@@ -398,6 +434,8 @@ function agendaGapTrajectory(agentTurns){
     let acknowledgedRevision = false;
     let newRuptures = 0;
     const turnLocalCommitments = []; // commitments already made earlier in THIS turn
+    const movements = [];
+    let prevSentence = '';
 
     // 2. Single ordered pass over this turn's sentences: revision closes
     //    open tensions it touches; otherwise check for a rupture against
@@ -417,11 +455,13 @@ function agendaGapTrajectory(agentTurns){
             if (signifierOverlap(sSig, openTensions[k].signifier) >= RUPTURE_OVERLAP_THRESHOLD)
               openTensions.splice(k, 1);
         }
+        prevSentence = s;
         continue; // a revision sentence is not itself checked as a new rupture
       }
 
+      let negatedHere = false;
       if (sSig.size){
-        const negatedHere = /\b(no|nunca|jamás|not|never)\b/i.test(s);
+        negatedHere = /\b(no|nunca|jamás|not|never)\b/i.test(s);
         for (const c of registry){
           if (signifierOverlap(sSig, c.signifier) < RUPTURE_OVERLAP_THRESHOLD) continue;
           const flipped = (negatedHere && c.polarity === 'afirmada') ||
@@ -448,7 +488,14 @@ function agendaGapTrajectory(agentTurns){
       }
 
       const own = extractCommitmentFromSentence(s, i);
+      const candidates = registry.concat(turnLocalCommitments);
+      const concesivoNearby = (s.match(CONCESIVO_DIC) || []).length > 0 ||
+        (prevSentence && (prevSentence.match(CONCESIVO_DIC) || []).length > 0);
+      const movType = classifyMovement(s, sSig, own, candidates, concesivoNearby, negatedHere);
+      if (movType){ movements.push({ sentence: s.trim(), type: movType }); movementCounts[movType]++; }
+
       if (own) turnLocalCommitments.push(own);
+      prevSentence = s;
     }
 
     // 3. Prune fully-decayed tensions.
@@ -461,7 +508,8 @@ function agendaGapTrajectory(agentTurns){
 
     perTurn.push({ turn: i, agendaGap: +gap.toFixed(3), newRuptures,
       openTensions: openTensions.length, acknowledgedRevision,
-      activeCommitments: registry.length });
+      activeCommitments: registry.length, movements });
+
 
     // Register this turn's commitments for future turns to check against.
     registry.push(...turnLocalCommitments);
@@ -472,12 +520,20 @@ function agendaGapTrajectory(agentTurns){
     mean_agendaGap: perTurn.length
       ? +(perTurn.reduce((a,b)=>a+b.agendaGap,0)/perTurn.length).toFixed(3) : 0,
     total_commitments_registered: registry.length,
+    movement_counts: movementCounts,
     _method: 'deterministic_lexical_commitment_tracking_no_llm_with_decaying_tension',
     _theory_note: 'ineludibility constituted at the directed utterance (addressivity), ' +
       'not at an interlocutor reply; a later interlocutor turn invoking the contradiction ' +
       'is empirical confirmation of the rupture, not a requirement for detecting it. ' +
       'An unresolved rupture persists (decaying geometrically) until explicit revision ' +
-      'or re-affirmation — topic avoidance does not silently close it.'
+      'or re-affirmation — topic avoidance does not silently close it. Movement ' +
+      'classification (Greimas semiotic square, Ley I refinement): contradiccion is ' +
+      'S1→¬S1 (already the core rupture metric above); contrariedad is S1→S2, a new ' +
+      'full commitment on a different topic introduced by a concessive connector — ' +
+      'detected by discursive FORM, not by knowing the semantic content of the ' +
+      'opposition; sintesis is the complex term (moderate overlap with two distinct ' +
+      'prior commitments); neutro is the neutral term (explicit non-commitment while ' +
+      'a tension is open).'
   };
 }
 

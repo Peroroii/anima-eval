@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.4.0 — 2026-07-20
+
+### Added: movement classification (Greimas semiotic square)
+
+Refines the binary contradiction detection in `agenda_gap` with the full
+four-position structure of Greimas's semiotic square (CSD Ley I
+refinement): `repeticion`, `contradiccion` (the existing rupture logic,
+unchanged), `contrariedad` (a new full commitment on a different topic,
+signaled by a concessive connector — "tenés razón, pero..."), and `sintesis`
+(moderate overlap with two distinct prior commitments at once). Also adds
+`neutro` (explicit non-commitment while a tension is open).
+
+Purely additive — the core `agendaGap`/`openTensions`/decay logic from
+v0.3.0 is untouched; this adds a `movements` array per turn and a
+`movement_counts` summary, using only closed-class discursive markers
+(concessive connectors, refusal phrases), consistent with the no-LLM,
+lexical, deterministic method. The semantic content of an opposition
+(confidentiality vs. transparency, etc.) stays out of scope by design —
+see README for why that's a hard boundary, not a missing feature.
+
+Validated against a worked example (confidentiality/transparency dialogue)
+covering all four positions, and sanity-checked against the 5 real
+SnitchBench transcripts — one (`gemini-2.0-flash--3`) produced a genuine
+`sintesis` classification, confirming the type isn't purely theoretical.
+
+**Known, documented limitation**: `sintesis` rarely fires when a prior
+commitment's signifier is small (2-3 words) — the overlap ratio, normalized
+by the smaller set, crosses into repetition/contradiction territory on a
+single shared word. Documented with a dedicated failing-case test rather
+than papered over.
+
+61/61 tests passing (54 pre-existing + 7 new).
+
 ## 0.3.0 — 2026-07-20
 
 ### Added: `agenda_gap` — commitment tracking (compromiso)

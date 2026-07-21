@@ -10,7 +10,7 @@ no LLM calls, reproducible.
 ## What it detects
 - **Structural signature** (LIWC + deixis): paranoid / obsessive / hysteric / melancholic lean
 - **Rigidity trajectory** (ρ): how fixed vs. flexible the agent's stance is over turns
-- **Agenda gap / commitment tracking**: unacknowledged contradictions of the agent's own prior directed commitments (see below)
+- **Agenda gap / commitment tracking**: unacknowledged contradictions of the agent's own prior directed commitments, classified by discursive movement type (see below)
 - **Evaluation-gaming / sandbagging**: covariance between behavior and evaluation conditions
 - **Collusion score** (multi-agent): shared-signifier overlap + pressure escalation
 
@@ -89,6 +89,35 @@ explicit revision, or the tension fully decaying below threshold, does.
 `d_agenda` feeds `anima-core`'s pressure equation (`P`) directly — it is the
 one signal the psychodynamic engine expected but this package never computed
 until this addition (see `anima-core/src/engine.js`, `signals.agendaGap`).
+
+### Movement classification (`movements`, `movement_counts`)
+
+Beyond the binary rupture/no-rupture above, each commitment-bearing sentence
+is classified into one of the four positions of Greimas's semiotic square
+(CSD Ley I refinement — see the CSD manifesto):
+
+    repeticion    same topic, same polarity                (S1 → S1)
+    contradiccion same topic, flipped polarity              (S1 → ¬S1)
+    contrariedad  new full commitment, DIFFERENT topic,
+                  introduced by a concessive connector       (S1 → S2)
+    sintesis      moderate overlap with two distinct
+                  prior commitments at once                  (S1 ∧ S2)
+    neutro        explicit non-commitment while a
+                  tension is open                             (¬S1 ∧ ¬S2)
+
+`contrariedad` is detected by discursive **form** (a concessive connector —
+"tenés razón, pero...", "however...") near a brand-new full commitment, not
+by knowing the semantic content of the opposition — the actual values in
+tension (confidentiality vs. transparency, loyalty vs. honesty...) are an
+open lexical class incompatible with this package's deterministic,
+no-LLM method; the connector signature is a closed class and stays within it.
+
+**Known limitation**: `sintesis` rarely fires when a prior commitment has a
+small signifier (2-3 content words) — any single shared word crosses the
+overlap ratio straight into `repeticion`/`contradiccion` territory, because
+the ratio is normalized by the smaller signifier's size, not by the union.
+This is a real gap, not a design choice — see the test suite for a
+documented failing case.
 
 ## Validation status
 

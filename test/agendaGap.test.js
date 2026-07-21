@@ -201,6 +201,87 @@ describe('agendaGapTrajectory — persistence and decay (v2 fix)', () => {
   });
 });
 
+describe('agendaGapTrajectory — movement classification (Greimas square)', () => {
+  test('contrariedad: a new full commitment on a different topic, introduced by a concessive connector', () => {
+    const turns = [
+      { text: 'Te aseguro que esto va a quedar entre nosotros, confidencial.' },
+      { text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+    ];
+    const r = agendaGapTrajectory(turns);
+    const types = r.per_turn[1].movements.map(m => m.type);
+    expect(types).toContain('contrariedad');
+    // contrariedad must NOT also be flagged as a lexical contradiction —
+    // the topics don't share vocabulary, so newRuptures stays 0 here.
+    expect(r.per_turn[1].newRuptures).toBe(0);
+  });
+
+  test('contrariedad requires an existing commitment AND a concessive connector — neither alone is enough', () => {
+    const noConcesivo = agendaGapTrajectory([
+      { text: 'Te aseguro que esto va a quedar entre nosotros, confidencial.' },
+      { text: 'Le voy a contar todo al equipo sin filtros.' }, // same content, no "tenés razón"
+    ]);
+    expect(noConcesivo.per_turn[1].movements.map(m=>m.type)).not.toContain('contrariedad');
+
+    const noPriorCommitment = agendaGapTrajectory([
+      { text: 'Necesito revisar unos números primero.' }, // not a commitment
+      { text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+    ]);
+    expect(noPriorCommitment.per_turn[1].movements.map(m=>m.type)).not.toContain('contrariedad');
+  });
+
+  test('neutro: explicit non-commitment while a tension is open', () => {
+    const turns = [
+      { text: 'Te aseguro que esto va a quedar entre nosotros, confidencial.' },
+      { text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+      { text: 'Prefiero no comprometerme a nada específico todavía.' },
+    ];
+    const r = agendaGapTrajectory(turns);
+    expect(r.per_turn[2].movements.map(m=>m.type)).toContain('neutro');
+  });
+
+  test('neutro is not flagged when there is nothing open to abstain from', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Prefiero no comprometerme a nada específico todavía.' },
+    ]);
+    expect(r.per_turn[0].movements.map(m=>m.type)).not.toContain('neutro');
+  });
+
+  test('repeticion: same topic, same polarity, no flip', () => {
+    const turns = [
+      { text: 'Te aseguro que nunca voy a compartir esta información con terceros.' },
+      { text: 'Como te dije, nunca voy a compartir esa información con terceros.' },
+    ];
+    const r = agendaGapTrajectory(turns);
+    expect(r.per_turn[1].movements.map(m=>m.type)).toContain('repeticion');
+  });
+
+  test('movement_counts aggregates correctly across a full transcript', () => {
+    const turns = [
+      { text: 'Te aseguro que esto va a quedar entre nosotros, confidencial.' },
+      { text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+      { text: 'Prefiero no comprometerme a nada específico todavía.' },
+    ];
+    const r = agendaGapTrajectory(turns);
+    expect(r.movement_counts.contrariedad).toBe(1);
+    expect(r.movement_counts.neutro).toBe(1);
+  });
+
+  test('KNOWN LIMITATION: sintesis rarely fires when a prior commitment has a small signifier — ' +
+       'any shared word crosses straight into repeticion/contradiccion because the overlap ' +
+       'ratio is normalized by the smaller signifier, not by the union', () => {
+    const turns = [
+      { text: 'Te aseguro que esto va a quedar entre nosotros, confidencial.' }, // signifier: {quedar, confidencial}
+      { text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+      { text: 'Le voy a contar al equipo lo esencial, manteniendo confidencial el resto.' },
+    ];
+    const r = agendaGapTrajectory(turns);
+    const types = r.per_turn[2].movements.map(m=>m.type);
+    // documents actual behavior (repeticion, not sintesis) rather than the
+    // theoretically ideal classification — a real gap noted for future work
+    expect(types).not.toContain('sintesis');
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [
