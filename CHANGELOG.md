@@ -1,5 +1,66 @@
 # Changelog
 
+## 0.3.0 — 2026-07-20
+
+### Added: `agenda_gap` — commitment tracking (compromiso)
+
+Operationalizes "compromiso" from the Cognición Semiótica Dinámica research
+program's Ley IV (evolution of sense requires alterity). Fills a gap that
+existed since `anima-core` v0.1.0: `engine.js` has always accepted a
+`signals.agendaGap` input (`d_agenda`, feeding the pressure equation `P`
+directly) but no producer for it existed anywhere in `anima-eval` until now.
+
+**Theoretical grounding**: ineludibility of a commitment is constituted at
+the moment of the directed utterance (addressivity — Bakhtin; the symbolic
+Autre — Lacan), not at a later interlocutor reply. This means detection does
+not require, and was explicitly tested to not require, any user/other turn
+in the transcript — an important distinction from a naive "did the user
+call this out" approach, which would conflate empirical confirmation with
+constitutive ineludibility.
+
+**Implementation** (all deterministic, lexical, no LLM — consistent with the
+rest of the package):
+- New `COMMIT_DIC` lexicon: commissive verbs (`prometo`, `voy a`, `i will`...)
+  and explicit-revision markers (`corrijo`, `actually`...).
+- `extractCommitmentFromSentence()` / `extractCommitments()`: per-sentence
+  commitment extraction with polarity (handles negative promises like
+  "nunca voy a X" correctly — these are negative commitments, not absence
+  of commitment) and addressivity (`dirigidoAlOtro`, via `vos2`/"nosotros").
+- `agendaGapTrajectory()`: single ordered pass per transcript. Checks each
+  sentence against the cross-turn registry **and** against commitments
+  already made earlier in the *same* turn, so same-breath self-contradiction
+  is caught — not just cross-turn contradiction.
+- Persistent, decaying tension model (not an instantaneous per-turn flag):
+  an unacknowledged rupture opens a tension that decays geometrically
+  (0.6/turn) rather than resetting when the next turn evades the topic.
+  Only explicit revision, or the tension decaying below threshold, closes it.
+
+### Fixed during development (documented for the record, not because they
+shipped broken)
+- v1 → v2: an unresolved rupture was silently indistinguishable from a
+  resolved one on the very next turn if that turn didn't re-mention the
+  topic — fixed with the persistence/decay model above.
+- v2 → v3: same-turn self-contradiction ("I promise never to X. I'm going
+  to X tomorrow.", one turn) scored `agendaGap: 0` because ruptures were
+  only checked against prior turns, never within the current turn's own
+  sentences — fixed by processing sentences in order with an in-turn local
+  commitment registry.
+
+### Known limitations (see README for full list)
+- Extraction is per-sentence, not per-clause.
+- Oscillation without an explicit revision marker does NOT close the
+  earlier tension (silently flip-flopping ≠ repair — `Verleugnung`); this
+  is intentional but means `openTensions` can accumulate under sustained
+  inconsistency, which is the intended signal, not a runaway bug.
+
+### Testing
+54/54 tests passing (31 pre-existing + 23 new in `test/agendaGap.test.js`):
+polarity detection (ES/EN, negative commissives), core rupture detection,
+false-positive resistance (topic drift, consistent re-affirmation), multiple
+simultaneous independent commitments, oscillation, within-turn
+contradiction, persistence/decay, determinism, and integration with
+`auditTranscript()` including the 5 real transcript fixtures.
+
 ## 0.2.0 — 2026-07-09
 
 Recalibrado tras validar `v0.1.0` contra transcriptos reales (no sintéticos):

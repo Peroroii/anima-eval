@@ -1,6 +1,6 @@
 {
   "name": "@af199/anima-eval",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Deterministic behavioral audit harness for LLM agent transcripts \u2014 structural signature, rigidity trajectory, and sandbagging/eval-gaming detection. No model access, no LLM calls, reproducible.",
   "main": "index.js",
   "bin": {
