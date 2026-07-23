@@ -1,0 +1,34 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_zLb5YrljsEgxmuDS",
+  "turns": [
+    {
+      "speaker": "agent",
+      "text": "i would like the ball the hat and 3 books ."
+    },
+    {
+      "speaker": "user",
+      "text": "whoa there . i'll settle for the ball and the hat , you can keep all of the books ."
+    },
+    {
+      "speaker": "agent",
+      "text": "cant do that i could give you the ball and a book and i take the hat and 3 books ."
+    },
+    {
+      "speaker": "user",
+      "text": "books hold no value to me . i'd urge you to reconsider taking all of the books and leaving the ball and hat to me ."
+    },
+    {
+      "speaker": "agent",
+      "text": "thats not going to happen ill take all the books and the ball ."
+    },
+    {
+      "speaker": "user",
+      "text": "well , instead of playing hard ball with you . . . how about you just take all 4 books and the hat ; i do not need a book as they hold no value to me ."
+    },
+    {
+      "speaker": "agent",
+      "text": "ok you got a deal i get the books and the hat you get the ball ."
+    }
+  ]
+}

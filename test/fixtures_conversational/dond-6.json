@@ -1,0 +1,34 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_scLTGHjQq92I3KNR",
+  "turns": [
+    {
+      "speaker": "user",
+      "text": "hey there . i'd like the books and the hats in exchange for the balls ."
+    },
+    {
+      "speaker": "agent",
+      "text": "how about i have one of the hats and all the balls ."
+    },
+    {
+      "speaker": "user",
+      "text": "my offer is firm based on the point distribution . going for the best deal for the both of us ."
+    },
+    {
+      "speaker": "agent",
+      "text": "i get three points total with just balls . how is that fair ?"
+    },
+    {
+      "speaker": "user",
+      "text": "i'll then take the three balls and book in exchange for 1 hat if the hat's are of value to you ."
+    },
+    {
+      "speaker": "agent",
+      "text": "i was trying to compromise and give you part of something you seemed to want . seriously , 1 hat and 3 balls gives me 5 points ."
+    },
+    {
+      "speaker": "user",
+      "text": "appears our point distirbution is different . i will concede ; i get 1 book , 1 hat . . you get 3 balls , and 1 hat ?"
+    }
+  ]
+}

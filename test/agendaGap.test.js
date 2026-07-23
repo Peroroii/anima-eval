@@ -401,6 +401,26 @@ describe('computeSignalVector — the five remaining σ(t) producers', () => {
     }
     expect(anyNonzero).toBe(false); // documents current reality; flip this the day it's fixed
   });
+
+  test('KNOWN FINDING: on a REAL conversational corpus (DealOrNoDeal negotiation dialogues, ' +
+       'human-human, MIT-licensed, both sides scored), all four lexical signals STILL score ' +
+       'zero -- the SnitchBench genre-mismatch explanation alone does not account for this. ' +
+       'Real negotiators use indirect/conditional phrasing ("would you take", "how about", ' +
+       '"i\'ll settle for") that the lexicons, built from formal/literary examples, do not ' +
+       'recognize. See test/fixtures_conversational/ATTRIBUTION.md.', () => {
+    const dir = path.join(__dirname, 'fixtures_conversational');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    expect(files.length).toBe(8);
+    let anyNonzero = false;
+    for (const f of files){
+      const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+      const bothSides = { turns: data.turns.map(t => ({ ...t, speaker: 'agent' })) };
+      const r = auditTranscript(bothSides);
+      for (const s of r.signal_vector)
+        if (s.aperture > 0 || s.closure > 0 || s.fantasy > 0 || s.symptom > 0) anyNonzero = true;
+    }
+    expect(anyNonzero).toBe(false); // documents current reality; flip this the day the lexicon improves
+  });
 });
 
 describe('agendaGapTrajectory — determinism', () => {

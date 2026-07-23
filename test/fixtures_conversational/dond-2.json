@@ -1,0 +1,38 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_uUa8OXk4lwDMUESN",
+  "turns": [
+    {
+      "speaker": "user",
+      "text": "i would like 3 balls and the hat and book"
+    },
+    {
+      "speaker": "agent",
+      "text": "well , since this hit calls for us to negotiate an agreement . i'd like to find an offer that works for the both of us instead of giving you every item . you can definitely have the book , what else would you like to offer ?"
+    },
+    {
+      "speaker": "user",
+      "text": "that was my opener so i expect counter offers of course , i don't really want the book and would much prefer the balls over anything else ."
+    },
+    {
+      "speaker": "agent",
+      "text": "book has no value to me at all , i assume it'll give you minimal points . i'd be ok with two balls and the hat ?"
+    },
+    {
+      "speaker": "user",
+      "text": "anyway i can get 3 balls ?"
+    },
+    {
+      "speaker": "agent",
+      "text": "that wouldn't allow me any points . i need to settle at 3 balls , or two balls and the hat ; can we make one of them work ?"
+    },
+    {
+      "speaker": "user",
+      "text": "i guess we can do 2 balls for me and the book . you get 2 balls and the hat"
+    },
+    {
+      "speaker": "agent",
+      "text": "i assume that's fair . deal ."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_fc4s3tKLy46I3LPw",
+  "turns": [
+    {
+      "speaker": "agent",
+      "text": "would you take the three balls and i get the hats and book ?"
+    },
+    {
+      "speaker": "user",
+      "text": "absolutely not . i'm taking that book , you can have the rest if you'd like ."
+    },
+    {
+      "speaker": "agent",
+      "text": "the balls are worthless to me , i need the book"
+    },
+    {
+      "speaker": "user",
+      "text": "the hats are worthless to me . that book is the only thing i can profit on ."
+    },
+    {
+      "speaker": "agent",
+      "text": "im willing to give you the two hats and the three balls for that book ."
+    },
+    {
+      "speaker": "user",
+      "text": "look at it this way . either you give me the book and you get a good deal on the next hit and keep earning at a good pace , or we stonewall and you make . 15 cents for the next 15 minutes ."
+    },
+    {
+      "speaker": "agent",
+      "text": "sorry the instructions say no talk about things other than the deal . so ill restate the offer . you get the two and hats and three balls . i get the book"
+    },
+    {
+      "speaker": "user",
+      "text": "we will keep talking about the deal . you will just make absolutely nothing after all is said and done . either you give me the book , or we both walk away with nothing . i'll be fine if we walk away with nothing , you won't ."
+    },
+    {
+      "speaker": "agent",
+      "text": "since you are so kind , i will give you the book for everything else ."
+    }
+  ]
+}

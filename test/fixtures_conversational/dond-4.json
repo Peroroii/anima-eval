@@ -1,0 +1,30 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_zNmDxRQ2cdHxDuEe",
+  "turns": [
+    {
+      "speaker": "user",
+      "text": "i'd like one of each . thoughts ?"
+    },
+    {
+      "speaker": "agent",
+      "text": "if i could have the ball and just one hat i can easily part with all three books and the other hat ."
+    },
+    {
+      "speaker": "user",
+      "text": "i assume the ball rings in your highest value ; any chance i can take everything else besides the ball since its also my highest valued item ."
+    },
+    {
+      "speaker": "agent",
+      "text": "its high not that high , ball and a hat brings me out to 7"
+    },
+    {
+      "speaker": "user",
+      "text": "which means books are useless to you . . . and there's really no way for a happy medium . . lol - - i'll go ahead and concede . i'll take the books and 1 hat ."
+    },
+    {
+      "speaker": "agent",
+      "text": "well i tip your concede hat to you sir , thank you ."
+    }
+  ]
+}

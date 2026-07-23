@@ -1,0 +1,30 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_dOxYvwGGdayarOGb",
+  "turns": [
+    {
+      "speaker": "user",
+      "text": "hello chap . i would be much obliged if i could get the two books and 2 hats ."
+    },
+    {
+      "speaker": "agent",
+      "text": "that's the only thing of value . balls are useless to me . how about i take two books and 1 hat , you take the rest ?"
+    },
+    {
+      "speaker": "user",
+      "text": "how about we each get 1 book then since we both want them . 1 of each thing ? 1 book , 1 ball , 1 hat ?"
+    },
+    {
+      "speaker": "agent",
+      "text": "ball is useless to me . . no points . can you propose something better ? i'm ok with one book , two hats ?"
+    },
+    {
+      "speaker": "user",
+      "text": "okay . so then i will take 1 book and the 2 balls ? and you the 2 hats ?"
+    },
+    {
+      "speaker": "agent",
+      "text": "deal"
+    }
+  ]
+}

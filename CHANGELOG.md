@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased — real conversational corpus + a bigger finding
+
+Added `test/fixtures_conversational/` — 8 real, human-human negotiation
+dialogues from the DealOrNoDeal dataset (Lewis et al. 2017, MIT license,
+via `stanfordnlp/cocoa`), selected specifically to validate the v0.6.0
+signal producers against genuine deliberative language, after the 5
+SnitchBench transcripts turned out to be tool-call/log/email boilerplate
+with none. See `ATTRIBUTION.md` in that directory for full provenance.
+
+**The finding is bigger than expected.** Even on real, natural negotiation
+dialogue (and after correcting for a methodological artifact —
+`auditTranscript()` only scores `speaker:'agent'` turns, discarding half of
+a symmetric two-party negotiation if not corrected for), all four newly
+added lexical signals (`aperture`/`closure`/`fantasy`/`symptom`) still
+score **zero across all 57 real turns**. This rules out "wrong genre" as
+the sole explanation. The real diagnosis: the lexicons were built from
+formal/literary register examples ("qué tal si", "está decidido",
+"imaginate", "sé que no debería") and real negotiators use different,
+more indirect/conditional constructions for the same speech functions
+("would you take", "how about", "i'll settle for", "i guess we can do").
+`agendaGap` fares only slightly better (signal in 1/8 dialogues once both
+sides are counted) for the same underlying reason — its commissive lexicon
+("voy a", "i will") misses the desiderative/conditional offer phrasing
+("i would like", "i'd take") that dominates real negotiation.
+
+Pinned with a dedicated test rather than silently left for the lexicon
+expansion to "fix quietly" later. 76/76 tests passing (1 new). No functional
+code changed in this entry — diagnosis and corpus only; the lexicon
+expansion itself is the next concrete step.
+
 ## 0.6.0 — 2026-07-21
 
 ### Added: the remaining five σ(t) producers — `computeSignalVector`

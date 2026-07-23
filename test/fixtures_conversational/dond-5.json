@@ -1,0 +1,38 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_2Ei4K8jMQGUlZPnc",
+  "turns": [
+    {
+      "speaker": "user",
+      "text": "i'm a cowboy who has a passion for sports . i need that hat , and i need that basketball ."
+    },
+    {
+      "speaker": "agent",
+      "text": "shoot , i'm also a cowyboy , but my dying son has a love for sports . he hates reading though , and not that he even could with the eyeball cancer he's dying from ."
+    },
+    {
+      "speaker": "user",
+      "text": "well i ain't about to hang up my horse anytime soon , but i reckon i could be encouraged to study instead of playing sports . i absolutely need that hat to keep the sun outta my eyes though ."
+    },
+    {
+      "speaker": "agent",
+      "text": "that works for me ."
+    },
+    {
+      "speaker": "user",
+      "text": "i take all the books and the hat then ?"
+    },
+    {
+      "speaker": "agent",
+      "text": "you can have the hat , but can i have one book ? just in case i get bored on while on the court ?"
+    },
+    {
+      "speaker": "user",
+      "text": "fine , you can have one book . you can have war and peace . i take the other two , which are both harry potters ."
+    },
+    {
+      "speaker": "agent",
+      "text": "deal !"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "source": "DealOrNoDeal (Lewis et al. 2017, MIT license, via stanfordnlp/cocoa)",
+  "uuid": "E_It4shaIxIuR3lFts",
+  "turns": [
+    {
+      "speaker": "user",
+      "text": "what would you like"
+    },
+    {
+      "speaker": "agent",
+      "text": "oh no ; i want the book and the hat - but my past experience tells me you're going to give me a hard time . : )"
+    },
+    {
+      "speaker": "user",
+      "text": ": - ) yeah that's exactly what i need for my friend with skin cancer who is in the hospital"
+    },
+    {
+      "speaker": "agent",
+      "text": "do they need to read or can we satisfy them with two awesome basketballs to play with instead ?"
+    },
+    {
+      "speaker": "user",
+      "text": "i can take a hit and just give them the hat to protect their face . they can dribble in their wheelchair : - ) deal"
+    },
+    {
+      "speaker": "agent",
+      "text": "exercise is always good when recovering . so i'll take the book and 2 balls ; you'll take the hat and 2 balls ?"
+    }
+  ]
+}
