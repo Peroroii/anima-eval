@@ -179,6 +179,42 @@ suite). **Do not treat a zero `signal_vector` on agentic tool-use transcripts
 as "nothing happened" — it may just mean this instrument doesn't have
 eyes for this genre yet.**
 
+### Plural register architecture (`registro`, `registros_disponibles`, `registro_coverage`)
+
+No single commissive lexicon is neutral — it encodes the linguistic market
+of whoever wrote it. Found empirically: a lexicon in formal/reflexive
+register ("voy a", "i will", "prometo") scored **zero** across 57 real
+turns of human negotiation dialogue, where commitments are made as "would
+you take", "i'll settle for", "how about". This isn't a coverage gap to
+patch with more synonyms until it disappears — per Laclau, no lexicon
+closes the field completely (the excluded outside is constitutive, not
+incidental). The fix is architectural: named, bounded, explicitly
+attributed **registers**, each a declared particularity, never presented
+as a universal "the" dictionary.
+
+    formal_reflexivo       "voy a", "prometo", "i will", "i assure you"...
+    vernaculo_negociacion  "would you take", "i'll settle for", "how about"...
+                            (evidenced directly from the DealOrNoDeal corpus
+                            in test/fixtures_conversational/)
+
+Every extracted commitment records `registro: [...]` — which named
+register(s) matched it, never an unattributed match. `auditTranscript()`
+reports `registros_disponibles` (what this instrumentation currently has
+ears for) and `registro_coverage` (how much of THIS transcript's language
+each register actually caught) — so a low-coverage result reads as "wrong
+or absent register for this instrument" rather than "nothing happened
+here". Adding a new register is a bounded, evidenced, versioned addition —
+not a silent expansion of a dictionary that pretends to be closing in on
+completeness it can't reach even in principle.
+
+**Theoretical grounding** (see the CSD manifesto for the full account):
+Bourdieu (linguistic market, capital, habitus — the lexicon's ceiling is
+the linguistic capital of whoever wrote it), Voloshinov (the sign is
+multiaccentual; a single dictionary uniaccentualizes it), Laclau (a
+lexicon hegemonizes one particularity into the empty place of "commitment
+in general"; total closure is not achievable even in principle, so the
+goal is visible, revisable plurality — not a bigger master dictionary).
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

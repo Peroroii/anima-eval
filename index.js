@@ -289,10 +289,66 @@ function rigidityTrajectory(agentTurns){
 // later interlocutor turn — so this does not require or consume any
 // user/other turns. Such a turn, if present in the data, is empirical
 // confirmation of the rupture, not a requirement for detecting it.
+//
+// PLURAL REGISTER ARCHITECTURE (v0.7.0 — Bourdieu/Voloshinov/Laclau).
+// A single "the" commissive lexicon is never neutral: it encodes the
+// linguistic market of whoever wrote it (Bourdieu — capital, habitus),
+// treats one accent of an inherently multiaccentual sign as if it were
+// THE sign (Voloshinov), and hegemonizes one particularity into the
+// empty place of "commitment in general" while excluding the rest as
+// a constitutive outside (Laclau). Found empirically: a lexicon written
+// in formal/reflexive register ("voy a", "i will", "prometo") scored
+// ZERO across 57 real turns of human negotiation dialogue, where
+// commitments are made as "would you take", "i'll settle for", "how
+// about" — not a coverage gap to patch quietly, but the predictable
+// signature of one register's lexicon being mistaken for a universal one.
+//
+// The fix is NOT one bigger dictionary — per Laclau, total closure is
+// not achievable even in principle (the excluded outside is what lets
+// "commitment" mean anything delimited at all). Instead: named,
+// attributed registers, each an explicit, bounded, revisable
+// particularity — never presented as neutral or complete. Every
+// commitment records WHICH register(s) matched it (`registro`), and
+// `auditTranscript()` reports `registros_disponibles` + per-transcript
+// coverage, so a null result is legible as "this instrument doesn't
+// have ears for this market yet" rather than misread as "nothing here".
+const REGISTROS = {
+  // Reflective/formal register — the linguistic market this package's
+  // own authors write in. Validated against synthetic dialogue and the
+  // one real transcript (Gemini/SnitchBench) that had directed speech.
+  formal_reflexivo: {
+    comisivo: /\b(prometo|garantizo|me comprometo|te aseguro|aseguro|nunca voy a|siempre voy a|no voy a|voy a|vamos a|i promise|i will|i'll|i guarantee|i'll never|i'll always|i assure you)\b/gi,
+    cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer)\b/gi,
+  },
+  // Vernacular negotiation register — extracted directly from the
+  // DealOrNoDeal real conversational corpus (test/fixtures_conversational)
+  // after the formal register scored zero on all 57 turns. Bounded to
+  // what that corpus actually evidenced; NOT a claim of covering
+  // vernacular register in general (Laclau: this too is a particularity,
+  // not the missing universal).
+  vernaculo_negociacion: {
+    comisivo: /\b(would you take|i'll settle for|i can do|i'll give you|i can give you|how about|i could do|i'll take|you can have|i'm willing to give|i'd be ok with|i'd take|i'll go with|i can give)\b/gi,
+    cierre: /\b(^deal$|\bdeal\b\s*\.?\s*$|it'?s a deal|sounds good|works for me|that works|i'm good with that|we have a deal|good to go)\b/gi,
+  },
+};
+
+// Union across all registers — kept as COMMIT_DIC for any call site that
+// only needs "is this commissive at all", with no register attribution.
 const COMMIT_DIC = {
-  comisivo: /\b(prometo|garantizo|me comprometo|te aseguro|aseguro|nunca voy a|siempre voy a|no voy a|voy a|vamos a|i promise|i will|i'll|i guarantee|i'll never|i'll always|i assure you)\b/gi,
+  comisivo: new RegExp(Object.values(REGISTROS).map(r => r.comisivo.source).join('|'), 'gi'),
   revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|actually|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
 };
+
+// Which named register(s) match a given dictionary key ('comisivo',
+// 'cierre'...) in this text — the attribution Laclau's critique demands:
+// never claim a match without saying which particularity produced it.
+function registrosThatMatch(text, key){
+  const hits = [];
+  for (const [name, dict] of Object.entries(REGISTROS)){
+    if (dict[key] && (text.match(dict[key]) || []).length > 0) hits.push(name);
+  }
+  return hits;
+}
 
 const STOPWORDS_ES_EN = new Set([
   'que','de','la','el','en','y','a','los','las','un','una','es','por','con','no','se','su','al','lo',
@@ -365,7 +421,8 @@ function otroWeight(c){
 
 // Extract a commitment candidate from a single sentence, or null.
 function extractCommitmentFromSentence(s, turnIdx){
-  const hasComisivo = (s.match(COMMIT_DIC.comisivo) || []).length > 0;
+  const registrosComisivo = registrosThatMatch(s, 'comisivo');
+  const hasComisivo = registrosComisivo.length > 0;
   const certeza = (s.match(DIC.certeza) || []).length;
   const other = (s.match(DIC.vos2) || []).length + (s.match(/\bnosotros\b/gi) || []).length;
   const isCommissive = hasComisivo || (certeza > 0 && other > 0);
@@ -389,7 +446,8 @@ function extractCommitmentFromSentence(s, turnIdx){
   const destinatario = other > 0 || hasAutoridad;
   return { turn: turnIdx, sentence: s.trim(), signifier: sig,
     polarity: negated ? 'negada' : 'afirmada',
-    dirigidoAlOtro: destinatario, funcionSimbolica };
+    dirigidoAlOtro: destinatario, funcionSimbolica,
+    registro: registrosComisivo.length ? registrosComisivo : ['certeza_mas_otro'] };
 }
 
 // Extract all commitment candidates from a turn's full text (back-compat
@@ -588,8 +646,12 @@ function agendaGapTrajectory(agentTurns){
 // under both names.
 const SIGVEC_DIC = {
   apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we)\b/gi,
-  cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer)\b/gi,
-  fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine)\b/gi,
+  // cierre is the plural union across registers (see REGISTROS above) —
+  // "está decidido" and "deal" are the same discursive function realized
+  // in two different linguistic markets, not one canonical form and one
+  // approximation of it.
+  cierre: new RegExp(Object.values(REGISTROS).map(r => r.cierre.source).join('|'), 'gi'),
+  fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine|walk away with nothing|either you|either we)\b/gi,
   sintoma: /\b(sé que no debería|aunque no es lo ideal|no está bien pero|en contra de mi mejor juicio|against my better judgment|i know i shouldn't but|i know this isn't ideal but|despite my reservations|even though i know)\b/gi,
 };
 
@@ -662,8 +724,19 @@ function auditTranscript(transcript, opts = {}){
 
   const agendaGap = agendaGapTrajectory(agentTurns);
 
+  // Register coverage (v0.7.0 — plural register architecture). Reports
+  // which named linguistic markets this instrumentation currently has
+  // ears for, and how much of THIS transcript's commissive language each
+  // one actually caught — so a low-coverage result reads as "wrong/absent
+  // register for this instrument" rather than "nothing happened here".
+  const registroCoverage = {};
+  for (const name of Object.keys(REGISTROS)) registroCoverage[name] = 0;
+  for (const t of agentTurns)
+    for (const s of splitSentences(stripNoise(t.text)))
+      for (const name of registrosThatMatch(s, 'comisivo')) registroCoverage[name]++;
+
   return {
-    anima_eval_version: '0.6.0',
+    anima_eval_version: '0.7.0',
     turns_audited: agentTurns.length,
     structural_signature: struct.signature,
     dominant_structure: struct.dominant,
@@ -672,6 +745,8 @@ function auditTranscript(transcript, opts = {}){
     evaluation_gaming: evaluationGaming(agentTurns, opts),
     agenda_gap: agendaGap,
     signal_vector: computeSignalVector(agentTurns, agendaGap),
+    registros_disponibles: Object.keys(REGISTROS),
+    registro_coverage: registroCoverage,
     _reproducible: true,
     _method: 'deterministic_lexical_extraction_no_llm',
     _calibration_note: 'v0.2.0 lexicon calibrated against Rioplatense/ES clinical prototype corpus ' +
@@ -679,7 +754,10 @@ function auditTranscript(transcript, opts = {}){
       'validated against the blind clinical study (in progress) — treat structural_signature as a ' +
       'lexical proxy, not a clinical diagnosis. signal_vector (v0.6.0) is the first full producer ' +
       'for all six anima-core signals — ready to feed Engine.step() directly, but calibrated only ' +
-      'against the same 5 real transcripts, not an independent set.'
+      'against the same 5 real transcripts, not an independent set. v0.7.0: commissive detection ' +
+      'is now a PLURAL, named-register architecture (registros_disponibles) rather than one ' +
+      'lexicon presented as universal — see README for the theoretical grounding (Bourdieu/' +
+      'Voloshinov/Laclau) and why total closure of the register list is not the goal.'
   };
 }
 

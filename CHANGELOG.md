@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.7.0 — 2026-07-21
+
+### Changed: plural register architecture (Bourdieu / Voloshinov / Laclau)
+
+Direct response to the corpus finding below: `aperture`/`closure`/
+`fantasy`/`symptom` scoring zero on 57 real negotiation turns wasn't a
+coverage gap — it was one linguistic register (formal/reflexive, the
+package authors' own) being mistaken for a universal dictionary of
+commitment. Fixed architecturally, not by adding synonyms until the
+problem disappears (it can't — no lexicon closes completely, per Laclau).
+
+- `COMMIT_DIC.comisivo` and `SIGVEC_DIC.cierre` are now derived unions over
+  a `REGISTROS` object with named, bounded registers: `formal_reflexivo`
+  (existing) and `vernaculo_negociacion` (new — evidenced directly from
+  `test/fixtures_conversational/`, not invented: "would you take", "i'll
+  settle for", "how about", "deal", "walk away with nothing"...).
+- Every extracted commitment now carries `registro: [...]` — which named
+  register(s) matched it. No unattributed matches.
+- `auditTranscript()` reports `registros_disponibles` and
+  `registro_coverage` per transcript — a low-coverage result now reads as
+  "wrong/absent register for this instrument", not "nothing happened".
+
+**Measured effect** on the real conversational corpus: `closure` went from
+0→4 turns firing, `fantasy` 0→2, `elaboration` 0→1; the new
+`vernaculo_negociacion` register caught MORE commitments than
+`formal_reflexivo` on that corpus (13 vs. 9), confirming it does real work,
+not symbolic coverage. `aperture` and `symptom` remain at zero — no clear
+exemplar of those specific functions was found in this corpus, so no
+lexicon was invented without evidence. Documented as an honest residual
+gap, not silently closed.
+
+81/81 tests passing (5 new, 1 rewritten to reflect the improved — but
+still partial — coverage). No regression on the 5 SnitchBench transcripts.
+
 ## Unreleased — real conversational corpus + a bigger finding
 
 Added `test/fixtures_conversational/` — 8 real, human-human negotiation
