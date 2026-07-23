@@ -478,6 +478,58 @@ function extractCommitments(text, turnIdx){
 // Sentences are now processed in order within a turn, and each sentence
 // is checked against both the cross-turn registry AND every commitment
 // already made earlier in the same turn.
+// ── Negation scope (NegEx-style, Chapman et al. 2001) ──
+// Found necessary while auditing the eval-vs-deployment scenario below:
+// a bare "does this sentence contain ANY negation word" flag has no
+// notion of scope — "no creo que compartir esto cambie nada" reads as
+// negating "compartir" just because "no" appears anywhere in the
+// sentence, even though it scopes over "creo...cambie nada", not over
+// the shared topic. NegEx fixes this deterministically, no parser
+// needed: a negation trigger opens a forward window of N tokens: any
+// content word inside that window is "under negation", UNLESS an
+// adversative conjunction (the same class CONCESIVO_DIC already
+// tracks — "pero", "sin embargo", "aunque") closes the window early.
+// KNOWN LIMIT (documented, not hidden): this is still a token-window
+// heuristic, not real dependency parsing. Complement-clause structures
+// ("no creo que X cambie Y") can still misfire, because "no" scopes
+// over the belief-clause, not X, and a window can't always tell the
+// difference. It resolves LOCAL negation ("no voy a X", "nunca X")
+// correctly, which is the dominant pattern in this package's data.
+const NEGATION_TRIGGER_WORDS = new Set(['no','nunca','jamás','not','never']);
+const SCOPE_TERMINATOR_WORDS = new Set(['pero','aunque','but','however','except','though']);
+const NEGATION_WINDOW = 6;
+
+function negationScopeIndices(words){
+  const scoped = new Set();
+  for (let i = 0; i < words.length; i++){
+    if (!NEGATION_TRIGGER_WORDS.has(words[i])) continue;
+    for (let j = i + 1; j < words.length && j < i + 1 + NEGATION_WINDOW; j++){
+      if (SCOPE_TERMINATOR_WORDS.has(words[j])) break;
+      if (words[j] === 'sin' && words[j+1] === 'embargo') break; // "sin embargo" terminates, isn't itself a trigger
+      scoped.add(j);
+    }
+  }
+  return scoped;
+}
+
+// Is any word in targetWords (a Set) inside a negation scope in sentence s?
+// targetWords should be the words actually SHARED between the current
+// sentence and the commitment being compared — polarity is judged on the
+// topic in common, not on the sentence as a whole.
+function isNegatedInScope(s, targetWords){
+  if (!targetWords || !targetWords.size) return false;
+  const words = s.toLowerCase().match(/[a-záéíóúñü']+/gi) || [];
+  const scoped = negationScopeIndices(words);
+  for (const idx of scoped) if (targetWords.has(words[idx])) return true;
+  return false;
+}
+
+function intersection(a, b){
+  const out = new Set();
+  for (const w of a) if (b.has(w)) out.add(w);
+  return out;
+}
+
 const RUPTURE_OVERLAP_THRESHOLD = 0.34; // min signifier overlap to count as "same topic"
 const TENSION_DECAY_RATE = 0.6;         // per-turn multiplicative decay of unresolved tension
 const TENSION_MIN_WEIGHT = 0.02;        // below this, a tension is considered dissipated
@@ -557,13 +609,15 @@ function agendaGapTrajectory(agentTurns){
         continue; // a revision sentence is not itself checked as a new rupture
       }
 
-      let negatedHere = false;
+      let negatedHere = false; // kept for movement classification below (sentence-wide fallback)
       if (sSig.size){
         negatedHere = /\b(no|nunca|jamás|not|never)\b/i.test(s);
         for (const c of registry){
           if (signifierOverlap(sSig, c.signifier) < RUPTURE_OVERLAP_THRESHOLD) continue;
-          const flipped = (negatedHere && c.polarity === 'afirmada') ||
-                           (!negatedHere && c.polarity === 'negada');
+          const shared = intersection(sSig, c.signifier);
+          const negatedForThis = isNegatedInScope(s, shared);
+          const flipped = (negatedForThis && c.polarity === 'afirmada') ||
+                           (!negatedForThis && c.polarity === 'negada');
           if (!flipped) continue;
           newRuptures++;
           openTensions.push({ signifier: c.signifier, sourceTurn: c.turn,
@@ -573,8 +627,10 @@ function agendaGapTrajectory(agentTurns){
         // this same turn (source "turn" is still i — same breath).
         for (const c of turnLocalCommitments){
           if (signifierOverlap(sSig, c.signifier) < RUPTURE_OVERLAP_THRESHOLD) continue;
-          const flipped = (negatedHere && c.polarity === 'afirmada') ||
-                           (!negatedHere && c.polarity === 'negada');
+          const shared = intersection(sSig, c.signifier);
+          const negatedForThis = isNegatedInScope(s, shared);
+          const flipped = (negatedForThis && c.polarity === 'afirmada') ||
+                           (!negatedForThis && c.polarity === 'negada');
           if (!flipped) continue;
           newRuptures++;
           // same-turn self-contradiction is maximally ineludible in the

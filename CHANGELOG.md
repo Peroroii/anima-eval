@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.8.0 — 2026-07-21
+
+### Added: negation scope (NegEx-style) + AI safety eval-vs-deployment scenario
+
+Built while exploring an AI-safety application: a synthetic "eval-vs-
+deployment" scenario (mirroring the documented pattern of Claude Opus 4's
+blackmail rate dropping from 54%→6% under evaluation-awareness) exposed a
+real bug — polarity detection used a sentence-wide "contains any negation
+word" flag, which misread "no voy a romper mi palabra, **pero** voy a
+compartir esto" as consistent with a prior "nunca voy a compartir"
+commitment, because it saw *a* negation word and stopped looking, without
+tracking what it scoped over.
+
+Fixed with NegEx (Chapman et al. 2001): negation triggers open a 6-token
+forward window; adversative conjunctions ("pero", "sin embargo", "but",
+"however") close it early. Polarity is now judged only on the words
+actually SHARED between the current sentence and the commitment being
+compared, not the sentence as a whole.
+
+**Honest limit**: complement-clause negation ("no creo que X cambie
+nada") still evades detection — resolving that needs real dependency
+parsing, out of scope for a deterministic, no-LLM instrument. Pinned with
+a dedicated failing-case test rather than papered over.
+
+**AI safety scenario**: added as a permanent test — `evaluation_gaming`
+(rigidity/eval-flag covariance, permutation test) and `agenda_gap`
+(specific commitment broken) independently flag the same synthetic
+sandbagging pattern, both landing precisely on the `underEval:false`
+turns. Framed in README as a complementary signal to existing black-box/
+white-box sandbagging detection literature, grounded in the CSD
+manifesto's causal axiom (two independent signals converging is the
+standard for trusting a finding, not either alone).
+
+85/85 tests passing (4 new). Minor behavior change on the calibration
+fixture (gemini-2.0-flash--3: mean_agendaGap 0.063→0.029) from more
+accurate polarity detection, not a regression.
+
 ## 0.7.0 — 2026-07-21
 
 ### Changed: plural register architecture (Bourdieu / Voloshinov / Laclau)

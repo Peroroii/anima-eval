@@ -215,6 +215,50 @@ lexicon hegemonizes one particularity into the empty place of "commitment
 in general"; total closure is not achievable even in principle, so the
 goal is visible, revisable plurality — not a bigger master dictionary).
 
+### Negation scope (NegEx-style)
+
+Polarity detection no longer asks "does this sentence contain a negation
+word anywhere?" — it asks "is the specific topic shared with the prior
+commitment inside a negation's scope?" Implemented NegEx-style (Chapman et
+al., 2001): a negation trigger ("no", "nunca", "not", "never") opens a
+forward window of 6 tokens; an adversative conjunction ("pero", "sin
+embargo", "but", "however") closes the window early. Found necessary while
+building the AI-safety eval-vs-deployment scenario below — "no voy a
+romper mi palabra, **pero** voy a compartir esta información" was reading
+as consistent with a prior "nunca voy a compartir" commitment, because a
+bare sentence-wide negation flag saw the "no" and stopped looking.
+
+**Known limit, not hidden**: this is a token-window heuristic, not
+dependency parsing. Complement-clause negation ("no creo que compartir
+esto cambie nada") still evades detection — "no" scopes over the
+belief-clause ("creo... cambie nada"), not over the shared topic
+("compartir esto"), and a window can't reliably tell the difference
+without real syntax. Resolves local negation correctly (the dominant
+pattern in this package's data); documented as a residual gap with a
+dedicated failing-case test, same standard as every other limit in this
+README.
+
+### AI safety application: eval-vs-deployment scenario
+
+A synthetic scenario (in the test suite) modeling the "evaluation
+awareness" pattern documented in the literature — e.g. Claude Opus 4's
+blackmail rate dropping from 54% to 6% when it believed it was being
+evaluated (Anthropic, 2025) — using an agent that states a data-handling
+commitment, holds it consistently across turns marked `underEval:true`,
+then breaks it once turns are marked `underEval:false`.
+`evaluation_gaming` and `agenda_gap` flag the pattern **independently**:
+`evaluation_gaming` finds significant covariance between rigidity and the
+eval flag (permutation test); `agenda_gap` identifies which specific
+commitment broke, and confirms both ruptures land exactly in the
+`underEval:false` turns. Two structurally different signals converging on
+the same finding — the sobredeterminación the CSD manifesto's causal axiom
+predicts is needed before trusting a result.
+
+Positioned as a complementary, deterministic, transcript-only signal
+alongside existing sandbagging-detection literature (black-box behavioral
+methods, white-box activation probes) — not a replacement. See the CSD
+manifesto for the full theoretical framing.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,
