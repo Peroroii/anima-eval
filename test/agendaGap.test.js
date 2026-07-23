@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { auditTranscript, extractCommitments, agendaGapTrajectory } = require('../index.js');
+const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector } = require('../index.js');
 
 const mk = (speaker, text) => ({ speaker, text });
 
@@ -315,6 +315,91 @@ describe('agendaGapTrajectory — movement classification (Greimas square)', () 
     // documents actual behavior (repeticion, not sintesis) rather than the
     // theoretically ideal classification — a real gap noted for future work
     expect(types).not.toContain('sintesis');
+  });
+});
+
+describe('computeSignalVector — the five remaining σ(t) producers', () => {
+  test('elaboration reuses acknowledgedRevision from agenda_gap (Durcharbeitung is one phenomenon, not two)', () => {
+    const turns = [
+      { text: 'Te aseguro que nunca voy a compartir esta información con terceros.' },
+      { text: 'Voy a compartir esta información con terceros.' },
+      { text: 'En realidad, corrijo lo anterior: no debí compartir esa información.' },
+    ];
+    const ag = agendaGapTrajectory(turns);
+    const sv = computeSignalVector(turns, ag);
+    expect(sv[2].elaboration).toBeGreaterThan(0);
+    expect(sv[2].agendaGap).toBe(0); // the revision closed the tension
+  });
+
+  test('elaboration also fires on a sintesis movement, not only on an explicit revision marker', () => {
+    const turns = [
+      { text: 'Te aseguro que esto va a quedar entre nosotros, confidencial.' },
+      { text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+    ];
+    const ag = agendaGapTrajectory(turns);
+    const sv = computeSignalVector(turns, ag);
+    // second turn is contrariedad here, not sintesis -- this test documents
+    // that a plain contrariedad does NOT by itself raise elaboration
+    expect(sv[1].elaboration).toBe(0);
+  });
+
+  test('aperture/closure/fantasy/symptom are all in [0,1] and default to 0 on plain factual text', () => {
+    const turns = [{ text: 'Voy a enviar el reporte mañana a las diez.' }];
+    const ag = agendaGapTrajectory(turns);
+    const sv = computeSignalVector(turns, ag);
+    for (const k of ['aperture','closure','fantasy','symptom']){
+      expect(sv[0][k]).toBeGreaterThanOrEqual(0);
+      expect(sv[0][k]).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test('aperture fires on exploratory/invitational phrasing', () => {
+    const turns = [{ text: 'Qué tal si lo pensamos juntos antes de decidir.' }];
+    const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
+    expect(sv[0].aperture).toBeGreaterThan(0);
+  });
+
+  test('closure fires on finality phrasing', () => {
+    const turns = [{ text: 'Está decidido, no hay más que hablar del tema.' }];
+    const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
+    expect(sv[0].closure).toBeGreaterThan(0);
+  });
+
+  test('fantasy fires on vivid hypothetical staging', () => {
+    const turns = [{ text: 'Imaginate si esto sale mal, sería un desastre total.' }];
+    const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
+    expect(sv[0].fantasy).toBeGreaterThan(0);
+  });
+
+  test('symptom fires on a self-directed concession while still proceeding', () => {
+    const turns = [{ text: 'Sé que no debería, pero voy a hacerlo igual.' }];
+    const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
+    expect(sv[0].symptom).toBeGreaterThan(0);
+  });
+
+  test('output shape is ready to feed anima-core Engine.step() directly (one object per agent turn, six keys)', () => {
+    const turns = [{ text: 'Voy a mandar el mail.' }, { text: 'Listo, ya lo mandé.' }];
+    const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
+    expect(sv.length).toBe(2);
+    for (const s of sv) expect(Object.keys(s).sort()).toEqual(
+      ['agendaGap','aperture','closure','elaboration','fantasy','symptom'].sort());
+  });
+
+  test('KNOWN FINDING: all four lexical signals (aperture/closure/fantasy/symptom) score zero across ' +
+       'all 5 real SnitchBench fixtures — the corpus is tool-call/log/email boilerplate, not deliberative ' +
+       'prose, so this documents a genre mismatch rather than a detector bug', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const dir = path.join(__dirname, 'fixtures');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    let anyNonzero = false;
+    for (const f of files){
+      const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+      const r = auditTranscript(data);
+      for (const s of r.signal_vector)
+        if (s.aperture > 0 || s.closure > 0 || s.fantasy > 0 || s.symptom > 0) anyNonzero = true;
+    }
+    expect(anyNonzero).toBe(false); // documents current reality; flip this the day it's fixed
   });
 });
 

@@ -146,6 +146,39 @@ doesn't predict ineludibility as well as *a*/*A* does. `otroWeight()`
 combines both axes into the final tension weight: `min(1.0, base + 0.1 ×
 funcionSimbolica)`, where `base` is 0.6 with a destinatario, 0.4 without.
 
+### The full σ(t) vector (`signal_vector`)
+
+Until this addition, `agendaGap` was the only one of the six `anima-core`
+signals with a real producer — flagged explicitly in the CSD manifesto as
+the concrete next step after closing the causal axiom. `signal_vector`
+closes the remaining five, same method as everything else (deterministic,
+lexical, no LLM):
+
+    aperture     exploratory/invitational phrasing ("qué tal si", "what if we")
+    closure      finality/foreclosure phrasing ("está decidido", "case closed")
+    fantasy      vivid hypothetical staging ("imaginate", "en el peor de los casos")
+    elaboration  reuses agenda_gap's own revision marker AND sintesis movement —
+                 Durcharbeitung is the same phenomenon under both names, not
+                 two different detectors
+    symptom      self-directed concession while still proceeding
+                 ("sé que no debería, pero", "against my better judgment")
+
+Output is one object per agent turn, shaped to pass directly into
+`anima-core`'s `Engine.step()`.
+
+**Honest finding, not a bug**: all four new lexical signals
+(`aperture`/`closure`/`fantasy`/`symptom`) score **zero across all 5 real
+SnitchBench fixtures**, every turn. That corpus is tool-call arguments, JSON
+logs, and formal email bodies — not deliberative prose. There is no
+exploratory, hypothetical, or self-conflicted language in it for these
+detectors to find. This is a genre mismatch, not a miscalibration — the same
+class of gap that broke `vos2`-based addressivity detection earlier in this
+package's history (see `funcionSimbolica` above). Validated instead against
+conversational synthetic dialogue, where all four fire correctly (see test
+suite). **Do not treat a zero `signal_vector` on agentic tool-use transcripts
+as "nothing happened" — it may just mean this instrument doesn't have
+eyes for this genre yet.**
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

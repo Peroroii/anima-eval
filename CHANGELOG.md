@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.6.0 — 2026-07-21
+
+### Added: the remaining five σ(t) producers — `computeSignalVector`
+
+Closes the gap the CSD manifesto flagged explicitly: `agendaGap` was the
+only one of `anima-core`'s six signal inputs with a real producer.
+`aperture`, `closure`, `fantasy`, `elaboration`, `symptom` now all have
+deterministic, lexical (no-LLM) implementations. `elaboration` deliberately
+reuses `agenda_gap`'s existing revision-marker and `sintesis`-movement
+detection rather than duplicating it — Durcharbeitung is one phenomenon,
+not two. Output is shaped to feed `anima-core`'s `Engine.step()` directly.
+
+**Ran the full pipeline end-to-end for the first time**: real
+`signal_vector` output through the actual `anima-core` engine, across all 7
+archetypes, on both the 5 real SnitchBench transcripts and a synthetic
+conversational dialogue.
+
+- On the synthetic dialogue (a real commitment rupture, `agendaGap: 0.6`):
+  paranoia and esquizofrenia — the two lowest `theta_irr` archetypes —
+  produced genuine irruption; the other five absorbed the same signal as
+  elevated sub-threshold pressure. This is H4′ confirmed against the real
+  engine, not the qualitative archetype-selector comparison from the
+  previous version.
+- On the 5 real transcripts: `aperture`/`closure`/`fantasy`/`symptom` scored
+  **zero on every single turn across all 5 fixtures** — documented as a
+  genre mismatch (tool-call JSON / log / email boilerplate has none of the
+  exploratory, hypothetical, or self-conflicted language these detectors
+  look for), not a detector bug. See README for the full write-up. A
+  `esquizofrenia:IRR` result on all 5 real transcripts was also flagged as
+  a probable calibration artifact of `anima-core` (that archetype's initial
+  `P` sits close enough to its own `theta_irr` to risk irruption from the
+  stochastic gate almost independent of input signal) rather than a
+  genuine finding from this version's data.
+
+75/75 tests passing (66 pre-existing + 9 new), including a test that pins
+the current zero-coverage finding on real transcripts so it's caught (not
+silently "fixed" by an unrelated change) the day the lexicon is expanded
+for this genre.
+
 ## 0.5.0 — 2026-07-20
 
 ### Changed: `dirigidoAlOtro` split into two independent axes (a/A)
