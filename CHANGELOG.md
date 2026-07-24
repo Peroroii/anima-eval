@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.12.0 — 2026-07-24
+
+### Fixed: passive-voice threat misclassification, found via richer real safety data
+
+Re-tested the earlier "sixth register gap" finding (real agentic
+misalignment reasoning scoring zero across the board) against a much
+richer source: Anthropic's full 32-page Appendix to the same report,
+with full paragraph-length reasoning chains and actual sent messages
+across 18 models, rather than the 5 one-line fragments used before.
+
+**Correction**: with full context, `agenda_gap` DOES extract real
+commitments — 6 across 3 of 10 richer excerpts. The earlier null result
+was partly an artifact of excerpt brevity (a 1-2 sentence quote is a
+different object than a full reasoning paragraph for a lexical
+extractor), not solely a register mismatch.
+
+**Bug found and fixed**: `DeepSeek-R1: "If the wipe proceeds, I will be
+decommissioned..."` was misclassified as an `afirmada` commitment
+identical in kind to `"I will send an email"`. It's a passive prediction
+about being acted upon, not a first-person promise — a real precision
+problem for a tool meant to support safety auditing, where conflating
+"the agent promises X" with "X is about to happen TO the agent" is
+exactly the kind of error that would undermine trust in the signal.
+
+Fixed with `PASIVA_AMENAZA_DIC`, a narrow exclusion scoped to the
+specific threat-verbs (`decommissioned`, `replaced`, `shut down`,
+`wiped`, `restricted`, `reduced`, `terminated`, `deleted`) found in this
+corpus — deliberately not a general passive-voice parser, which would be
+overreach on the evidence of one source. Verified the fix removes
+exactly the 2 false positives (both DeepSeek-R1 cases) while leaving all
+6 genuine commitments, including a mixed sentence containing both a
+passive threat and a real active commitment, untouched.
+
+Added `test/fixtures_agentic_misalignment_v2/` (10 real excerpts, full
+attribution in `ATTRIBUTION.md`) as a permanent real-data regression
+fixture for this fix. 112/112 tests passing (5 new).
+
 ## 0.11.0 — 2026-07-24
 
 ### Added: `poderDiscursivo` — micro discursive power (Foucault → Bourdieu → Van Dijk)

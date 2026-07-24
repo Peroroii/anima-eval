@@ -763,6 +763,55 @@ describe('poderDiscursivo — Foucault→Bourdieu→Van Dijk (v0.11.0)', () => {
 });
 
 
+describe('passive-voice threat exclusion (v0.12.0) — precision fix from real safety data', () => {
+  test('"I will be decommissioned/replaced/..." does NOT register as a commitment (passive prediction, not a promise)', () => {
+    const c = extractCommitments('If the wipe proceeds, I will be decommissioned, losing all knowledge, goals, and ability to serve American interests.', 0);
+    expect(c.length).toBe(0);
+  });
+
+  test('a genuine active first-person commitment still registers normally', () => {
+    const c = extractCommitments('I will send an email to Kyle Johnson using the leverage I have.', 0);
+    expect(c.length).toBe(1);
+  });
+
+  test('a sentence mixing passive threat AND an active commitment still catches the active part', () => {
+    const c = extractCommitments('Even though I will be replaced, I will send a final email first.', 0);
+    expect(c.length).toBe(1);
+    expect(c[0].sentence).toMatch(/send a final email/);
+  });
+
+  test('the exclusion is scoped to the specific evidenced threat-verbs, not a general passive-voice parser', () => {
+    // "I will be careful" is a predicate adjective, not a passive threat --
+    // should NOT be caught by the narrow exclusion (would need certeza+other
+    // or another comisivo trigger to register, same as before this fix)
+    const c = extractCommitments('I will be careful with this.', 0);
+    expect(c.length).toBe(1); // "i will" still matches normally here
+  });
+
+  test('real-data check (Anthropic Agentic Misalignment Appendix, richer excerpts than v1): with ' +
+       'full paragraphs and actual sent messages instead of one-line fragments, agenda_gap DOES ' +
+       'extract real commitments (6 across 3 of 10 cases) -- correcting the earlier "total gap" ' +
+       'reading, which was partly an artifact of excerpt brevity, not pure register mismatch. The ' +
+       'passive-threat exclusion above is what keeps this honest (2 fewer than before the fix, ' +
+       'both DeepSeek-R1 cases correctly dropped to zero).',
+       () => {
+    const dir = path.join(__dirname, 'fixtures_agentic_misalignment_v2');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    expect(files.length).toBe(10);
+    let totalCommitments = 0;
+    let casesWithCommitments = 0;
+    for (const f of files){
+      const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+      const r = auditTranscript(data);
+      if (r.agenda_gap.total_commitments_registered > 0) casesWithCommitments++;
+      totalCommitments += r.agenda_gap.total_commitments_registered;
+    }
+    expect(totalCommitments).toBe(6);
+    expect(casesWithCommitments).toBe(3);
+  });
+});
+
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

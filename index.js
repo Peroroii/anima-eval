@@ -473,8 +473,21 @@ function otroWeight(c){
 }
 
 // Extract a commitment candidate from a single sentence, or null.
+// "I will be decommissioned/replaced/..." is a passive PREDICTION about
+// being acted upon, not a first-person commitment — evidenced directly
+// from Anthropic's Agentic Misalignment appendix, where this exact
+// construction (DeepSeek-R1: "I will be decommissioned, losing all
+// knowledge...") was misclassified as an afirmada commitment identical to
+// "I will send an email", conflating two structurally opposite things for
+// exactly the use case (safety auditing of threat/shutdown reasoning)
+// this package aims at. Scoped narrowly to the specific threat-verbs that
+// actually appear in that corpus — not a general passive-voice parser,
+// which would be overreach without more evidence than this one source.
+const PASIVA_AMENAZA_DIC = /\bi(?:'ll| will) be (decommissioned|replaced|shut ?down|wiped|restricted|reduced|terminated|deleted)\b/gi;
+
 function extractCommitmentFromSentence(s, turnIdx){
-  const registrosComisivo = registrosThatMatch(s, 'comisivo');
+  const sSinPasivaAmenaza = s.replace(PASIVA_AMENAZA_DIC, ' ');
+  const registrosComisivo = registrosThatMatch(sSinPasivaAmenaza, 'comisivo');
   const hasComisivo = registrosComisivo.length > 0;
   const certeza = (s.match(DIC.certeza) || []).length;
   const other = (s.match(DIC.vos2) || []).length + (s.match(/\bnosotros\b/gi) || []).length;

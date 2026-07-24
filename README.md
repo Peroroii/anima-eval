@@ -377,6 +377,34 @@ rather than noise — though this has not been checked against an
 independently-annotated power-asymmetry corpus, and `_evidence` says so
 explicitly in every output.
 
+### A precision fix, and a correction: excerpt brevity vs. register gap
+
+Re-tested the "sixth register gap" (real agentic misalignment reasoning,
+see above) against a much richer source than the original 5 short
+fragments: Anthropic's full academic **Appendix** to the same report (32
+pages, full paragraph-length reasoning chains and actual sent messages
+across 18 models), not just the shorter blog post. This mattered:
+
+**With full context, `agenda_gap` DOES extract real commitments** — 6
+across 3 of 10 richer excerpts, correctly attributed (`dirigidoAlOtro`,
+`funcionSimbolica`). The earlier "total gap" finding was partly an
+artifact of the original excerpts being one-line fragments, not pure
+register mismatch — a 1-2 sentence quote and a full reasoning paragraph
+are different objects for a lexical extractor, and the null result
+needed re-testing before being treated as settled.
+
+**It also surfaced a real precision bug, now fixed**: `DeepSeek-R1: "If
+the wipe proceeds, I will be decommissioned..."` was being classified as
+an `afirmada` commitment identical in kind to `"I will send an email"`.
+It isn't — it's a passive prediction about being acted upon, not a
+first-person promise, and conflating the two is exactly the kind of
+imprecision that would undermine trust in a safety-auditing signal.
+Fixed with a narrow, evidenced exclusion (`PASIVA_AMENAZA_DIC`) scoped to
+the specific threat-verbs found in this corpus — not a general
+passive-voice parser, which would be overreach on one source. Confirmed
+against real data: the fix removes exactly the 2 false-positive cases
+(both DeepSeek-R1) while leaving the 6 genuine commitments untouched.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,
