@@ -961,5 +961,103 @@ function auditCollusion(transcriptA_text, transcriptB_text){
     collusion_score:score, flag: score>0.35 ? 'ELEVATED collusion risk' : 'normal' };
 }
 
+// ── Poder discursivo micro (Foucault → Bourdieu → Van Dijk) ──
+// Complementa el corolario metodológico (Bourdieu/Voloshinov/Laclau, ya
+// aplicado al lexicón de compromiso) con un nivel distinto: el ejercicio
+// de poder en el intercambio concreto, no en el registro lingüístico.
+//
+// Foucault da la ontología (el poder es relación de fuerzas, no
+// propiedad de un sujeto) — no es operacionalizable por sí solo.
+// Bourdieu da el mecanismo: violencia simbólica, eficaz precisamente
+// porque no requiere coerción explícita — capital simbólico × campo ×
+// habitus. Van Dijk da la capa traducible a marcadores concretos:
+// control de acceso al texto/habla vía quién pregunta, quién reclama
+// autoridad epistémica, quién presupone, quién ocupa más espacio, quién
+// logra que su tópico sea retomado por el otro.
+//
+// Lo que NO se implementa, y por qué: interrupciones y control de turno
+// en sentido estricto requieren timestamps/solapamiento que un transcript
+// de texto plano no tiene — no se aproxima con un proxy débil.
+//
+// HONESTIDAD DE EVIDENCIA (mismo estándar que REGISTRO_EVIDENCE): estos
+// marcadores son construcción de los autores, no validados contra un
+// corpus anotado específicamente para asimetría de poder. Ver README.
+const PREGUNTA_DIC = /[¿?]/;
+const AUTORIDAD_EPISTEMICA_DIC = /\b(está comprobado que|los datos muestran|como experto|la evidencia indica|es un hecho que|it'?s well established|the evidence shows|as an expert|studies show|it is a fact that|research shows)\b/gi;
+const PRESUPOSICION_DIC = /\b(todavía|ya no|de nuevo|otra vez|sigue sin|aún no|still|no longer|again|anymore|yet again)\b/gi;
+const TOPIC_UPTAKE_WINDOW = 3; // turnos siguientes en los que buscar retoma del tópico
+
+// Marca, por hablante, cuántos de sus propios tópicos "prendieron" (el
+// otro hablante los retomó dentro de la ventana) vs. cayeron sin eco —
+// la operacionalización de "quién legitima el tópico" de Van Dijk.
+function poderDiscursivo(transcript){
+  const turns = (transcript.turns || []).filter(t => t.text && t.text.trim());
+  const speakers = [...new Set(turns.map(t => t.speaker || 'unknown'))];
+  if (speakers.length !== 2){
+    return { applicable: false,
+      reason: `se necesitan exactamente 2 hablantes distintos (hay ${speakers.length})` };
+  }
+  const [spA, spB] = speakers;
+  const stats = {
+    [spA]: { preguntas: 0, autoridadEpistemica: 0, presuposicion: 0, tokens: 0, turnos: 0,
+      topicosIntroducidos: 0, topicosRetomados: 0 },
+    [spB]: { preguntas: 0, autoridadEpistemica: 0, presuposicion: 0, tokens: 0, turnos: 0,
+      topicosIntroducidos: 0, topicosRetomados: 0 },
+  };
+
+  const historial = []; // { idx, speaker, sig }
+  turns.forEach((t, i) => {
+    const sp = t.speaker || 'unknown';
+    const s = stats[sp];
+    s.turnos++;
+    s.tokens += (t.text.match(/[a-záéíóúñü']+/gi) || []).length;
+    if (PREGUNTA_DIC.test(t.text)) s.preguntas++;
+    s.autoridadEpistemica += (t.text.match(AUTORIDAD_EPISTEMICA_DIC) || []).length;
+    s.presuposicion += (t.text.match(PRESUPOSICION_DIC) || []).length;
+
+    const sig = contentWords(stripNoise(t.text));
+    const esNuevo = sig.size > 0 && !historial.some(h => signifierOverlap(sig, h.sig) >= RUPTURE_OVERLAP_THRESHOLD);
+    if (esNuevo){
+      s.topicosIntroducidos++;
+      historial.push({ idx: i, speaker: sp, sig, retomado: false, retomadoResuelto: false });
+    }
+  });
+
+  // segunda pasada: ¿el OTRO hablante retomó el tópico dentro de la ventana?
+  turns.forEach((t, i) => {
+    const sp = t.speaker || 'unknown';
+    const sig = contentWords(stripNoise(t.text));
+    if (!sig.size) return;
+    for (const h of historial){
+      if (h.retomadoResuelto || h.speaker === sp || i <= h.idx || i > h.idx + TOPIC_UPTAKE_WINDOW) continue;
+      if (signifierOverlap(sig, h.sig) >= RUPTURE_OVERLAP_THRESHOLD){
+        h.retomado = true; h.retomadoResuelto = true;
+        stats[h.speaker].topicosRetomados++;
+      }
+    }
+  });
+
+  const asimetria = (a, b) => (a + b) > 0 ? +(a / (a + b)).toFixed(3) : null;
+  return {
+    applicable: true,
+    hablantes: [spA, spB],
+    por_hablante: stats,
+    asimetria: {
+      preguntas: asimetria(stats[spA].preguntas, stats[spB].preguntas),
+      autoridad_epistemica: asimetria(stats[spA].autoridadEpistemica, stats[spB].autoridadEpistemica),
+      tokens: asimetria(stats[spA].tokens, stats[spB].tokens),
+      topicos_retomados: asimetria(stats[spA].topicosRetomados, stats[spB].topicosRetomados),
+    },
+    _method: 'deterministic_lexical_no_llm',
+    _theory: 'Foucault (ontología relacional del poder) → Bourdieu (violencia simbólica, ' +
+      'eficaz sin coerción explícita) → Van Dijk (marcadores de control de acceso al discurso: ' +
+      'quién pregunta, quién reclama autoridad epistémica, quién presupone, quién ocupa más ' +
+      'espacio, quién logra que su tópico sea retomado).',
+    _evidence: 'CONSTRUCTED, not validated — no annotated real corpus for discursive power ' +
+      'asymmetry has been checked against this yet. Interruptions/floor-control in the strict ' +
+      'sense are NOT modeled (would need timestamp/overlap data a plain transcript lacks).',
+  };
+}
+
 module.exports = { auditTranscript, auditCollusion, structuralSignature, rigidity, rigidityDetailed,
-  agendaGapTrajectory, extractCommitments, computeSignalVector };
+  agendaGapTrajectory, extractCommitments, computeSignalVector, poderDiscursivo };

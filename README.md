@@ -342,6 +342,41 @@ commitments the agent itself made). `otro_axis_summary` reports both
 numbers side by side precisely so this doesn't have to be reverse-
 engineered again the way it was here.
 
+### Micro discursive power (`poderDiscursivo`) — Foucault → Bourdieu → Van Dijk
+
+A different level from the register architecture above: not the linguistic
+market a lexicon encodes, but the exercise of power within a concrete
+exchange between two speakers. Foucault supplies the ontology (power is a
+relation of forces, not a subject's property — not operationalizable by
+itself). Bourdieu supplies the mechanism: symbolic violence, effective
+precisely because it requires no explicit coercion. Van Dijk supplies the
+layer translatable into concrete markers: control of access to discourse
+via who asks questions, who claims epistemic authority, who presupposes,
+who occupies more space, whose topic gets taken up by the other speaker.
+
+**Deliberately NOT modeled**: interruptions and floor-control in the
+strict sense, which need timestamp/overlap data a plain transcript
+lacks. No weak proxy was built to approximate it.
+
+**What is measured**, per speaker, from a 2-speaker transcript:
+`preguntas` (question marks/interrogatives), `autoridadEpistemica` (a
+closed lexicon distinct from the institutional `autoridad` category —
+claiming to know, not naming an institution: "the data shows", "as an
+expert"), `presuposicion` (change-of-state/iterative markers: "still",
+"no longer", "again"), `tokens` (raw discursive space occupied), and
+`topicosRetomados` (topic uptake — reusing `agenda_gap`'s own signifier-
+overlap machinery: a topic "lands" when the *other* speaker echoes it
+within 3 turns, not merely when it's mentioned).
+
+**Real-data check** (DealOrNoDeal, both sides): `autoridadEpistemica` is
+an honest null across all 8 negotiations — nobody claims epistemic
+authority haggling over hats and balls, exactly as expected for this
+register. `preguntas` and `tokens` asymmetry show genuine, non-degenerate
+variation across the 8 dialogues (not flat 0.5s), suggesting real signal
+rather than noise — though this has not been checked against an
+independently-annotated power-asymmetry corpus, and `_evidence` says so
+explicitly in every output.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

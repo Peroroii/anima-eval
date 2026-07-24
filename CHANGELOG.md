@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.11.0 — 2026-07-24
+
+### Added: `poderDiscursivo` — micro discursive power (Foucault → Bourdieu → Van Dijk)
+
+A new level, distinct from the plural register architecture: not the
+linguistic market a lexicon encodes, but the exercise of power within a
+concrete two-speaker exchange. Foucault (ontology: power as relation of
+forces) → Bourdieu (mechanism: symbolic violence, effective without
+explicit coercion) → Van Dijk (concrete markers: control of access to
+discourse).
+
+Measures, per speaker: `preguntas` (who asks), `autoridadEpistemica` (a
+new lexicon distinct from the institutional `autoridad` category —
+claiming to know vs. naming an institution), `presuposicion`
+(change-of-state/iterative markers), `tokens` (raw discursive space),
+and `topicosRetomados` (topic uptake, reusing `agenda_gap`'s own
+signifier-overlap machinery — a topic "lands" only when the other
+speaker echoes it, not merely when mentioned).
+
+Deliberately does NOT model interruptions/floor-control in the strict
+sense — that needs timestamp/overlap data a plain transcript lacks, and
+no weak proxy was built to fake it.
+
+Real-data check against DealOrNoDeal (both sides, 8 real negotiations):
+`autoridadEpistemica` is an honest null throughout (nobody claims
+epistemic authority over hats and balls); `preguntas`/`tokens` asymmetry
+show genuine non-degenerate variation across dialogues, not flat 0.5s —
+suggestive real signal, though not yet checked against an independently
+annotated power-asymmetry corpus. Every output carries an explicit
+`_evidence: 'CONSTRUCTED, not validated...'` marker, same discipline as
+`REGISTRO_EVIDENCE`.
+
+107/107 tests passing (9 new). No change to any existing function.
+
 ## 0.10.1 — 2026-07-24
 
 ### Added: `otro_axis_summary` — raw mention vs. weighted activation

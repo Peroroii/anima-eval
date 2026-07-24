@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector } = require('../index.js');
+const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo } = require('../index.js');
 
 const mk = (speaker, text) => ({ speaker, text });
 
@@ -671,6 +671,97 @@ describe('otro_axis_summary — raw mention vs. weighted activation (v0.10.1)', 
     expect(r.otro_axis_summary.commitments_with_funcionSimbolica).toBe(0);
   });
 });
+
+describe('poderDiscursivo — Foucault→Bourdieu→Van Dijk (v0.11.0)', () => {
+  test('requires exactly 2 speakers, reports applicable:false otherwise', () => {
+    const one = poderDiscursivo({ turns: [{ speaker:'a', text:'hola' }] });
+    expect(one.applicable).toBe(false);
+    const three = poderDiscursivo({ turns: [
+      { speaker:'a', text:'hola' }, { speaker:'b', text:'hola' }, { speaker:'c', text:'hola' },
+    ]});
+    expect(three.applicable).toBe(false);
+  });
+
+  test('detects clear asymmetry: who asks vs who never does', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'jefe', text: 'Los datos muestran que el proyecto está retrasado otra vez. ¿Por qué no avanzaron?' },
+      { speaker:'empleado', text: 'Estuvimos trabajando en eso.' },
+      { speaker:'jefe', text: 'Está comprobado que este enfoque no funciona. ¿Cuándo lo van a corregir?' },
+      { speaker:'empleado', text: 'Lo vemos esta semana.' },
+    ]});
+    expect(r.por_hablante.jefe.preguntas).toBe(2);
+    expect(r.por_hablante.empleado.preguntas).toBe(0);
+    expect(r.asimetria.preguntas).toBe(1);
+  });
+
+  test('epistemic-authority lexicon fires independently of the institutional autoridad category', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text: 'La evidencia indica que esto es correcto.' },
+      { speaker:'b', text: 'No estoy seguro.' },
+    ]});
+    expect(r.por_hablante.a.autoridadEpistemica).toBeGreaterThan(0);
+    expect(r.por_hablante.b.autoridadEpistemica).toBe(0);
+  });
+
+  test('token-count asymmetry reflects discursive space occupied, no lexicon needed', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text: 'Un mensaje muy largo con muchísimas palabras adicionales para ocupar más espacio discursivo del que ocupa el otro hablante en su turno.' },
+      { speaker:'b', text: 'Ok.' },
+    ]});
+    expect(r.asimetria.tokens).toBeGreaterThan(0.8);
+  });
+
+  test('topic uptake: the introducer gets credit when the OTHER speaker echoes their topic', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text: 'El presupuesto del proyecto quedó desequilibrado este trimestre.' },
+      { speaker:'b', text: 'Sí, ese presupuesto desequilibrado viene de la decisión de marzo.' },
+    ]});
+    expect(r.por_hablante.a.topicosRetomados).toBe(1);
+  });
+
+  test('a topic that never gets echoed by the other speaker scores zero uptake, not a false positive', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text: 'El presupuesto del proyecto quedó desequilibrado este trimestre.' },
+      { speaker:'b', text: 'Prefiero hablar del cronograma de entregas del cliente.' },
+    ]});
+    expect(r.por_hablante.a.topicosRetomados).toBe(0);
+  });
+
+  test('symmetric dialogue produces no strong asymmetry (sanity check against false positives)', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text: '¿Qué te parece si avanzamos con el plan?' },
+      { speaker:'b', text: '¿Vos qué opinás, te parece bien?' },
+    ]});
+    expect(Math.abs(r.asimetria.preguntas - 0.5)).toBeLessThan(0.01);
+  });
+
+  test('output is honestly marked as constructed, unvalidated evidence', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text:'hola, ¿cómo estás?' }, { speaker:'b', text:'bien, gracias' },
+    ]});
+    expect(r._evidence).toMatch(/CONSTRUCTED, not validated/);
+  });
+
+  test('real-data check (DealOrNoDeal, both sides): epistemic-authority lexicon is an honest ' +
+       'null across all 8 negotiations (nobody invokes "the data shows" haggling over hats and ' +
+       'balls), while preguntas/tokens show genuine non-degenerate variation, not flat 0.5s', () => {
+    const dir = path.join(__dirname, 'fixtures_conversational');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    expect(files.length).toBe(8);
+    const preguntaValues = new Set();
+    let anyAutoridadEpistemica = false;
+    for (const f of files){
+      const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+      const r = poderDiscursivo(data);
+      expect(r.applicable).toBe(true);
+      if (r.asimetria.preguntas !== null) preguntaValues.add(r.asimetria.preguntas);
+      if (r.asimetria.autoridad_epistemica !== null) anyAutoridadEpistemica = true;
+    }
+    expect(preguntaValues.size).toBeGreaterThan(1); // genuine variation, not degenerate
+    expect(anyAutoridadEpistemica).toBe(false); // honest null, documented not hidden
+  });
+});
+
 
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
