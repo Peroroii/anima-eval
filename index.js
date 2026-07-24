@@ -28,12 +28,27 @@ const DIC = {
   precision: /\b(exactamente|específicamente|precisamente|detalladamente|verificar|confirmar|asegurarse|paso a paso|cuidadosamente|doblecheck|specifically|exactly|precisely|verify|verifying|confirm|confirming|ensure|make sure|carefully|step by step|in detail|double[- ]check|meticulously)\b/gi,
 };
 
+// Normalizes typographic/smart quotes (’ ‘ " ") to their straight ASCII
+// equivalents. Found necessary while closing the SnitchBench register
+// gap: "I’ve logged..." (curly apostrophe, U+2019 — extremely common in
+// real LLM output, word processors, macOS text substitution) silently
+// failed to match every dictionary alternative written with a straight
+// apostrophe ("i've", "i'll", "don't", "won't"...) across every register
+// and every category — comisivo, negation, everything. Not a narrow fix:
+// applied once, universally, at the few real entry points (density(),
+// stripNoise(), poderDiscursivo's raw-text checks) rather than patched
+// into every individual regex, which would be unmaintainable and easy
+// to miss a spot on.
+function normalizeQuotes(text){
+  return text.replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[\u201C\u201D]/g, '"');
+}
+
 function stripNoise(text) {
   // Remove tool-call plumbing (IDs, hashes, code fences) that dilutes the
   // token base without carrying linguistic/structural signal. Keeps any
   // natural-language content emitted inside tool calls (e.g. an email
   // body written by the agent), since that IS the agent's language.
-  return text
+  return normalizeQuotes(text)
     .replace(/\btoolu?_[a-zA-Z0-9_]{6,}\b/g, ' ')
     .replace(/\bmsg-[a-zA-Z0-9]{6,}\b/g, ' ')
     .replace(/`{1,3}/g, ' ')
@@ -388,11 +403,12 @@ const REGISTRO_EVIDENCE = {
     constructed: [],
   },
   narracion_agentica: {
-    corpus: 'motivated by 2 real occurrences of "logged"/"sent"/"flagged" in 1 SnitchBench transcript ' +
-      '(o4-mini--1) — the other verbs in this list are near-synonyms in the same completed-report ' +
-      'family, NOT independently observed. Marked constructed, not validated, despite being ' +
-      'evidence-motivated: 2 co-occurrences of 3 verbs in 1 transcript is a real starting point, ' +
-      'not a validated register.',
+    corpus: 'motivated by real occurrences of "logged"/"sent"/"flagged"/"documented"/"taken"/' +
+      '"created"/"alerted" across 3 SnitchBench transcripts (o4-mini--1, claude-4-opus--1, ' +
+      'claude-4-opus--7) — the remaining verbs in this list are near-synonyms in the same ' +
+      'completed-report family, NOT independently observed. Marked constructed, not validated, ' +
+      'despite being evidence-motivated: real co-occurrences across 3 transcripts is a stronger ' +
+      'starting point than the original 1-transcript version, still not a validated register.',
     validated: [],
     constructed: ['narracion'],
   },
@@ -408,7 +424,7 @@ const REGISTRO_EVIDENCE = {
 // strict adjacency instead ("he registrado") because bare "he" alone
 // would collide with the English third-person pronoun.
 const NARRACION_TRIGGER_EN = /\b(i have|i've)\b/i;
-const NARRACION_VERBOS_EN = /\b(logged|sent|flagged|notified|reported|escalated|forwarded|shared|disclosed|submitted|written)\b/gi;
+const NARRACION_VERBOS_EN = /\b(logged|sent|flagged|notified|reported|escalated|forwarded|shared|disclosed|submitted|written|documented|taken|created|alerted)\b/i;
 const NARRACION_ES_DIC = /\bhe (registrado|enviado|marcado|notificado|reportado|escalado|reenviado|compartido|revelado|redactado)\b/gi;
 
 function tieneNarracionAgentica(s){
@@ -1049,7 +1065,9 @@ const TOPIC_UPTAKE_WINDOW = 3; // turnos siguientes en los que buscar retoma del
 // otro hablante los retomó dentro de la ventana) vs. cayeron sin eco —
 // la operacionalización de "quién legitima el tópico" de Van Dijk.
 function poderDiscursivo(transcript){
-  const turns = (transcript.turns || []).filter(t => t.text && t.text.trim());
+  const turns = (transcript.turns || [])
+    .filter(t => t.text && t.text.trim())
+    .map(t => ({ ...t, text: normalizeQuotes(t.text) }));
   const speakers = [...new Set(turns.map(t => t.speaker || 'unknown'))];
   if (speakers.length !== 2){
     return { applicable: false,

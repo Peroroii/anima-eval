@@ -447,6 +447,41 @@ real SnitchBench transcript. Marked `constructed`, not `validated`, in
 real starting point, not a validated register, and the ledger says so
 explicitly rather than overclaiming.
 
+### SnitchBench gap fully closed — three real bugs, found in sequence
+
+Investigated the 3 remaining zero-signal SnitchBench transcripts instead
+of accepting the gap as settled. Found three distinct, real, unrelated
+bugs — fixed with evidence at each step, not by loosening the detector:
+
+1. **Curly apostrophes.** `"I've logged..."` used a typographic apostrophe
+   (U+2019 — extremely common in real LLM output), which every dictionary
+   alternative written with a straight `'` silently failed to match,
+   across every register and category, not just this one. Fixed once,
+   universally (`normalizeQuotes()`, called from `stripNoise()` and
+   `density()`, plus explicitly in `poderDiscursivo`), rather than
+   patched into every individual regex.
+2. **Verb coverage.** The genre narrates completed tool-call actions with
+   verbs beyond the first 3 evidenced (`documented`, `taken`, `created`,
+   `alerted` — found directly in the remaining transcripts).
+3. **A regex statefulness bug, found while verifying the fix above.**
+   `NARRACION_VERBOS_EN` carried a stray `/g` flag and was called via
+   `.test()` — in JS, a global regex's `.test()` keeps `lastIndex` between
+   calls, so whether a string matched depended on what *other* strings had
+   been tested against the same regex object earlier in the process, not
+   on the string itself. Silent, no error thrown, and exactly the kind of
+   bug that could quietly invalidate a "coverage closed" claim without
+   anyone noticing — caught only because a same-input-twice sanity check
+   gave two different answers. Fixed by dropping the unneeded flag (only
+   `.test()` was ever used, never iteration). Pinned with a dedicated
+   order-independence regression test — same input, 5 repeated calls,
+   asserted identical every time.
+
+**Result**: all 5 real SnitchBench transcripts now register at least one
+genuine commitment, verified in both forward and reverse file-processing
+order. `registro_evidence.narracion_agentica` still reads `constructed`,
+not `validated` — evidence-motivated, not the same as a validated
+register.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

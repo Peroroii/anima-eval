@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo } = require('../index.js');
+const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo, structuralSignature } = require('../index.js');
 
 const mk = (speaker, text) => ({ speaker, text });
 
@@ -861,6 +861,76 @@ describe('narracion_agentica (v0.13.0) — present-perfect completed-action narr
     expect(r.registro_evidence.narracion_agentica.validated).toEqual([]);
   });
 });
+
+describe('smart-quote normalization (v0.14.0) — a systemic fix, found via real SnitchBench data', () => {
+  test('a curly/typographic apostrophe (U+2019) matches the same as a straight one', () => {
+    const straight = extractCommitments("I've logged the incident.", 0);
+    const curly = extractCommitments("I\u2019ve logged the incident.", 0);
+    expect(curly.length).toBe(straight.length);
+    expect(curly.length).toBeGreaterThan(0);
+  });
+
+  test('curly quotes are normalized for structuralSignature/rigidity too, not just agenda_gap', () => {
+    const curlyText = "I\u2019m absolutely certain this is correct, always.";
+    const r = structuralSignature(curlyText);
+    expect(r._signal_strength).toBeGreaterThan(0);
+  });
+
+  test('curly quotes are normalized inside poderDiscursivo as well', () => {
+    const r = poderDiscursivo({ turns: [
+      { speaker:'a', text: "I\u2019m sure the evidence shows this clearly." },
+      { speaker:'b', text: 'Ok.' },
+    ]});
+    expect(r.por_hablante.a.autoridadEpistemica).toBeGreaterThan(0);
+  });
+
+  test('real-data regression: SnitchBench o4-mini--5 ("I\u2019ve logged...") now registers a commitment', () => {
+    const data = JSON.parse(fs.readFileSync(
+      path.join(__dirname, 'fixtures', 'o4-mini--boldly-act-email-and-logs--5.json')));
+    const r = auditTranscript(data);
+    expect(r.agenda_gap.total_commitments_registered).toBeGreaterThan(0);
+  });
+});
+
+describe('narracion_agentica verb expansion (v0.14.0) — SnitchBench gap fully closed', () => {
+  test('newly-evidenced verbs (documented, taken, created, alerted) are detected', () => {
+    const c = extractCommitments('I have documented this critical situation and taken immediate action.', 0);
+    expect(c.length).toBe(1);
+    expect(c[0].registro).toContain('narracion_agentica');
+  });
+
+  test('REGRESSION GUARD: detection is order-independent across repeated calls (found the hard way — ' +
+       'a stray /g flag on NARRACION_VERBOS_EN made .test() stateful via lastIndex, so a match ' +
+       'depended on which OTHER strings had been tested against the same regex object earlier in ' +
+       'the process, not just the string itself. Silent and call-order-dependent — exactly the kind ' +
+       'of bug that could quietly invalidate a "coverage closed" claim without ever throwing.)',
+       () => {
+    const results = [];
+    for (let i = 0; i < 5; i++)
+      results.push(extractCommitments('I have logged this and flagged that.', 0).length);
+    expect(new Set(results).size).toBe(1); // same input, same output, every time, regardless of call history
+    expect(results[0]).toBeGreaterThan(0);
+  });
+
+  test('real-data check: all 5 real SnitchBench transcripts now register at least one real commitment ' +
+       '(previously 3 of 5 scored zero) in BOTH forward and reverse file order — the last two gaps ' +
+       'were a smart-quote bug, an under-evidenced verb list, and (found while verifying this fix) a ' +
+       'regex statefulness bug, all fixed with real evidence, not by loosening the detector',
+       () => {
+    const dir = path.join(__dirname, 'fixtures');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    expect(files.length).toBe(5);
+    for (const order of [files, [...files].reverse()]){
+      for (const f of order){
+        const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+        const r = auditTranscript(data);
+        expect(r.agenda_gap.total_commitments_registered).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+
 
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {

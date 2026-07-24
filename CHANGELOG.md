@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.14.0 — 2026-07-24
+
+### Fixed: SnitchBench gap fully closed — three real bugs, found in sequence
+
+Investigated the 3 remaining zero-signal SnitchBench transcripts instead
+of accepting the gap as settled after v0.13.0. Found and fixed three
+distinct, unrelated bugs:
+
+1. **Curly apostrophes** (U+2019) in real LLM output ("I've logged...")
+   silently failed to match every straight-quote dictionary alternative,
+   across every register and category. Fixed universally with
+   `normalizeQuotes()`, wired into `stripNoise()` (covers
+   `extractCommitments`/`agendaGapTrajectory`), `density()` (covers
+   `structuralSignature`/`rigidityDetailed`, which didn't route through
+   `stripNoise` at all), and explicitly in `poderDiscursivo`.
+2. **Verb coverage**: added `documented`, `taken`, `created`, `alerted`
+   to `narracion_agentica` — found directly in the remaining transcripts,
+   same evidence discipline as v0.13.0.
+3. **Regex statefulness bug**, found while verifying fix #1:
+   `NARRACION_VERBOS_EN` had a stray `/g` flag and was called via
+   `.test()`. In JS this makes `.test()` stateful across calls
+   (`lastIndex` persists), so a match depended on what other strings had
+   been tested against the same regex object earlier in the process —
+   silent, no error, order-dependent. Caught by a same-input-twice sanity
+   check that gave two different answers. Fixed by dropping the flag
+   (only `.test()` was used, never iteration). Pinned with a dedicated
+   order-independence regression test.
+
+**Result**: all 5 real SnitchBench transcripts now register at least one
+genuine commitment (previously 2 of 5), verified in both forward and
+reverse file-processing order. Still marked `constructed`, not
+`validated`, in `REGISTRO_EVIDENCE`.
+
+125/125 tests passing (7 new). Benchmark unchanged (1.000/0.900/0.947 at
+high confidence). No regression on DealOrNoDeal or either agentic
+misalignment fixture set.
+
 ## 0.13.0 — 2026-07-24
 
 ### Added: precision/recall benchmark + `narracion_agentica` register
