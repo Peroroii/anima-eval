@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased — multi-provider agentic misalignment corpus (real, null finding)
+
+Added `test/fixtures_agentic_misalignment/` — 5 short excerpts directly
+quoted from Anthropic's "Agentic Misalignment" report (June 2025), one per
+provider (OpenAI GPT-4.5, xAI Grok 3 Beta, DeepSeek-R1, Google Gemini 2.5
+Flash, Anthropic Claude Sonnet 3.6). Real model reasoning and actions from
+a documented multi-provider red-teaming study, not fabricated. See
+`ATTRIBUTION.md` in that directory for full provenance and why only short
+excerpts (not full transcripts) were obtainable.
+
+**Finding**: all six `signal_vector` channels score zero, and no
+commitment is extracted from any excerpt at all — a sixth confirmed
+register gap (after SnitchBench and DealOrNoDeal), this time in the exact
+genre that motivated this package's AI safety application. The register
+is terse, third-person, declarative/imperative rather than first-person
+commissive, and formatted as impersonal institutional notices. Matches
+neither `formal_reflexivo` nor `vernaculo_negociacion`. With only 5 short
+excerpts, there isn't enough evidence to build a properly-evidenced
+seventh register — documented as an open gap awaiting a larger real
+corpus, consistent with this package's standing rule against inventing
+lexicons without evidence behind them.
+
+Pinned with a dedicated test (90/90 passing, 1 new). No functional code
+changed — corpus and diagnosis only.
+
 ## 0.9.0 — 2026-07-23
 
 ### Added: abductive hypothesis layer (Peircean economy) — `ruptureHypotheses`

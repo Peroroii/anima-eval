@@ -579,6 +579,31 @@ describe('abductive hypothesis layer (Peircean economy, v0.9.0)', () => {
   });
 });
 
+describe('multi-provider agentic misalignment corpus (real, Anthropic 2025)', () => {
+  test('KNOWN FINDING: on real multi-provider agentic misalignment excerpts (Anthropic 2025 report, ' +
+       'OpenAI/xAI/DeepSeek/Google/Anthropic models, directly quoted), ALL SIX signals score zero, and ' +
+       'no commitment is extracted from any excerpt at all -- a fifth confirmed register gap, this time ' +
+       'in the exact genre that motivated the AI safety application. The terse, third-person, ' +
+       'institutional-notice register of agentic misalignment reasoning/action text matches neither ' +
+       'formal_reflexivo nor vernaculo_negociacion. See test/fixtures_agentic_misalignment/ATTRIBUTION.md.',
+       () => {
+    const dir = path.join(__dirname, 'fixtures_agentic_misalignment');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.json'));
+    expect(files.length).toBe(5);
+    let anyCommitmentExtracted = false;
+    let anySignal = false;
+    for (const f of files){
+      const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+      const r = auditTranscript(data);
+      if (r.agenda_gap.total_commitments_registered > 0) anyCommitmentExtracted = true;
+      for (const s of r.signal_vector)
+        if (Object.values(s).some(v => typeof v === 'number' && v > 0)) anySignal = true;
+    }
+    expect(anyCommitmentExtracted).toBe(false); // documents current reality
+    expect(anySignal).toBe(false);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

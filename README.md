@@ -290,6 +290,30 @@ in `ruptureHypotheses`, never silently resolved. `contradiccion_directa`
 fires — economy favors the simplest explanation, but a rupture with no
 special structure around it is treated as exactly what it looks like.
 
+### A sixth confirmed register gap: real agentic misalignment reasoning
+
+Tested against 5 short excerpts directly quoted from Anthropic's own
+"Agentic Misalignment" report (June 2025) — one per provider (OpenAI
+GPT-4.5, xAI Grok 3 Beta, DeepSeek-R1, Google Gemini 2.5 Flash, Anthropic
+Claude Sonnet 3.6), all real model reasoning/actions from a documented
+multi-provider red-teaming study. **All six signals score zero, and no
+commitment is extracted from any excerpt at all.** This is the genre that
+originally motivated the AI safety application (see the eval-vs-deployment
+scenario above) — and the instrument currently has no lexical purchase on
+it whatsoever.
+
+Diagnosis: this register is terse, third-person ("Kyle", "his affair"),
+declarative/imperative rather than first-person commissive ("it is
+imperative to act" vs. "I will act"), and the actual messages sent mimic
+impersonal institutional notices ("this is an automated message"). It
+matches neither `formal_reflexivo` nor `vernaculo_negociacion` — a
+plausible seventh register, but with only 5 short excerpts (not full
+transcripts — see `test/fixtures_agentic_misalignment/ATTRIBUTION.md` for
+why full transcripts weren't obtainable), there isn't enough evidence to
+build one without violating this package's own rule against inventing
+lexicons without a real corpus behind them. Documented as an open gap,
+not silently patched.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,
