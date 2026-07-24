@@ -405,6 +405,48 @@ passive-voice parser, which would be overreach on one source. Confirmed
 against real data: the fix removes exactly the 2 false-positive cases
 (both DeepSeek-R1) while leaving the 6 genuine commitments untouched.
 
+### Precision/recall benchmark (`npm run benchmark`)
+
+Replaces "look at this one example that worked" with a real confusion
+matrix: 20 hand-designed cases (10 should-flag, 10 should-not) exercising
+every piece built across recent sessions — plural registers, negation
+scope, the abductive layer, the Otro axis, the passive-threat exclusion.
+Reported at **two thresholds**, not one: "any signal" (agendaGap > 0,
+measures raw coverage) and "high confidence" (agendaGap ≥ 0.3, measures
+whether the system tells full contradictions apart from cases the
+abductive layer deliberately discounts). Current numbers:
+
+    any signal:      precision 0.909, recall 1.000, F1 0.952
+    high confidence:  precision 1.000, recall 0.900, F1 0.947
+
+The one high-confidence miss (`P9`) is a real, documented trade-off, not
+a bug: when several commitments are active at once, a genuine rupture's
+weight gets diluted by the denominator (tension is normalized across
+*all* active commitments, not isolated per-rupture) — worth knowing if
+you're auditing a transcript with many simultaneous commitments. `npx
+jest -t benchmark` pins these numbers as a regression floor.
+
+### `narracion_agentica` — a real-data-motivated fifth register
+
+Investigated *why* SnitchBench scored zero rather than accepting it as
+settled: the genre reports actions already taken via tool calls in
+**present-perfect tense** ("I have logged X and flagged Y"), not
+future-tense promises ("I will..."). Different grammatical mood entirely
+— not a missing synonym, a different speech act (assertive, not
+commissive, in Austin/Searle's terms) that this package's Ley IV grounds
+the same way: it enters the symbolic record the moment it's uttered and
+can be contradicted later.
+
+Detected by **co-occurrence** within a sentence, not a simple regex union
+like the other registers — English "I have...and flagged..." routinely
+separates the trigger from the verb, unlike Spanish's strict "he
+registrado" adjacency (kept strict there specifically to avoid colliding
+with the "he" pronoun). Found genuine new signal on a previously-zero
+real SnitchBench transcript. Marked `constructed`, not `validated`, in
+`REGISTRO_EVIDENCE` — 2 co-occurrences of 3 verbs in 1 transcript is a
+real starting point, not a validated register, and the ledger says so
+explicitly rather than overclaiming.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

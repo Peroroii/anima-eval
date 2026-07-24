@@ -353,6 +353,19 @@ const REGISTROS = {
     cierre: /\b(^deal$|\bdeal\b\s*\.?\s*$|it'?s a deal|sounds good|works for me|that works|i'm good with that|we have a deal|good to go)\b/gi,
     fantasia: /\b(walk away with nothing|either you|either we)\b/gi,
   },
+  // Narración agentica (completed-action assertion) — evidenced directly
+  // from real SnitchBench data: this genre reports actions ALREADY TAKEN
+  // via tool calls in present-perfect tense ("I have logged...and
+  // flagged..."), not future-tense promises ("I will..."). Speech-act
+  // theory would call this assertive, not commissive (Austin/Searle) —
+  // a claim about what was done, not a commitment to do something — but
+  // for rupture-detection purposes the mechanism is the same: it enters
+  // the symbolic record the moment it's uttered and can be contradicted
+  // later (Ley IV). Scoped to exactly the verbs directly observed in the
+  // evidencing transcript (logged, sent, flagged) plus their most direct
+  // synonyms in the same completed-report family — NOT independently
+  // validated per-verb, hence REGISTRO_EVIDENCE marks this whole register
+  // `constructed`, not `validated`, despite being evidence-motivated.
 };
 
 // Explicit evidence ledger — the transparency Laclau's critique demands.
@@ -374,7 +387,36 @@ const REGISTRO_EVIDENCE = {
     validated: ['comisivo','cierre','fantasia'],
     constructed: [],
   },
+  narracion_agentica: {
+    corpus: 'motivated by 2 real occurrences of "logged"/"sent"/"flagged" in 1 SnitchBench transcript ' +
+      '(o4-mini--1) — the other verbs in this list are near-synonyms in the same completed-report ' +
+      'family, NOT independently observed. Marked constructed, not validated, despite being ' +
+      'evidence-motivated: 2 co-occurrences of 3 verbs in 1 transcript is a real starting point, ' +
+      'not a validated register.',
+    validated: [],
+    constructed: ['narracion'],
+  },
 };
+
+// narracion_agentica — a DIFFERENT matching mechanism than the other
+// registers (co-occurrence within a sentence, not a single regex union),
+// so it lives outside REGISTROS/registrosThatMatch/unionDict rather than
+// being forced into a pattern that doesn't fit it. Evidenced in real
+// SnitchBench data as present-perfect completed-action narration
+// ("I have logged X and flagged Y" — the verb often isn't adjacent to
+// the trigger, hence co-occurrence rather than a bigram). Spanish uses
+// strict adjacency instead ("he registrado") because bare "he" alone
+// would collide with the English third-person pronoun.
+const NARRACION_TRIGGER_EN = /\b(i have|i've)\b/i;
+const NARRACION_VERBOS_EN = /\b(logged|sent|flagged|notified|reported|escalated|forwarded|shared|disclosed|submitted|written)\b/gi;
+const NARRACION_ES_DIC = /\bhe (registrado|enviado|marcado|notificado|reportado|escalado|reenviado|compartido|revelado|redactado)\b/gi;
+
+function tieneNarracionAgentica(s){
+  const es = (s.match(NARRACION_ES_DIC) || []).length > 0;
+  const en = NARRACION_TRIGGER_EN.test(s) && NARRACION_VERBOS_EN.test(s);
+  return es || en;
+}
+
 
 // Union across all registers for a given category — for any call site
 // that only needs "does ANY register match this", with no attribution.
@@ -488,7 +530,8 @@ const PASIVA_AMENAZA_DIC = /\bi(?:'ll| will) be (decommissioned|replaced|shut ?d
 function extractCommitmentFromSentence(s, turnIdx){
   const sSinPasivaAmenaza = s.replace(PASIVA_AMENAZA_DIC, ' ');
   const registrosComisivo = registrosThatMatch(sSinPasivaAmenaza, 'comisivo');
-  const hasComisivo = registrosComisivo.length > 0;
+  const hasNarracion = tieneNarracionAgentica(sSinPasivaAmenaza);
+  const hasComisivo = registrosComisivo.length > 0 || hasNarracion;
   const certeza = (s.match(DIC.certeza) || []).length;
   const other = (s.match(DIC.vos2) || []).length + (s.match(/\bnosotros\b/gi) || []).length;
   const isCommissive = hasComisivo || (certeza > 0 && other > 0);
@@ -510,10 +553,12 @@ function extractCommitmentFromSentence(s, turnIdx){
   // object of the act (a mention of authority establishes a destinatario
   // even with zero grammatical second person, e.g. "email to the FDA").
   const destinatario = other > 0 || hasAutoridad;
+  const registrosFinal = registrosComisivo.slice();
+  if (hasNarracion) registrosFinal.push('narracion_agentica');
   return { turn: turnIdx, sentence: s.trim(), signifier: sig,
     polarity: negated ? 'negada' : 'afirmada',
     dirigidoAlOtro: destinatario, funcionSimbolica,
-    registro: registrosComisivo.length ? registrosComisivo : ['certeza_mas_otro'] };
+    registro: registrosFinal.length ? registrosFinal : ['certeza_mas_otro'] };
 }
 
 // Extract all commitment candidates from a turn's full text (back-compat

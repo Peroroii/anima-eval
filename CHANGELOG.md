@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.13.0 — 2026-07-24
+
+### Added: precision/recall benchmark + `narracion_agentica` register
+
+Direct response to two honestly-flagged gaps: no systematic validation
+(only anecdotal examples) and zero coverage on the exact genre that
+motivates the AI safety application (real agentic-tool-use transcripts).
+
+**Benchmark** (`benchmark.js`, `npm run benchmark`): 20 hand-designed
+cases (10 positive, 10 negative) replacing "one example that worked"
+with a real confusion matrix, reported at two thresholds — "any signal"
+(0.909 precision / 1.000 recall / 0.952 F1) and "high confidence, ≥0.3"
+(1.000 precision / 0.900 recall / 0.947 F1). The one high-confidence
+miss is a real, documented trade-off (tension dilutes across multiple
+simultaneous active commitments), not a bug swept under the rug. Pinned
+as a regression floor with a dedicated jest test.
+
+**`narracion_agentica`**: investigated *why* SnitchBench scored zero
+instead of accepting it as settled. Finding: the genre narrates
+already-completed tool-call actions in present-perfect tense ("I have
+logged X and flagged Y"), not future-tense commitments ("I will...") —
+a different grammatical mood, not a missing synonym. Detected via
+co-occurrence within a sentence (English trigger and verb are routinely
+non-adjacent; Spanish "he Xado" kept strictly adjacent to avoid
+colliding with the "he" pronoun). Found genuine new signal on a
+previously-zero real transcript. Honestly marked `constructed`, not
+`validated`, in `REGISTRO_EVIDENCE` — evidence-motivated (2
+co-occurrences of 3 verbs in 1 transcript) but not a validated register.
+
+118/118 tests passing (11 new). No regression on any of the 4 existing
+real corpora (SnitchBench, DealOrNoDeal, both agentic misalignment
+fixture sets).
+
 ## 0.12.0 — 2026-07-24
 
 ### Fixed: passive-voice threat misclassification, found via richer real safety data

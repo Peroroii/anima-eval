@@ -812,6 +812,56 @@ describe('passive-voice threat exclusion (v0.12.0) — precision fix from real s
 });
 
 
+describe('benchmark.js — precision/recall regression guard (v0.13.0)', () => {
+  test('20-case hand-labeled benchmark: any-signal recall stays at 1.0, high-confidence precision stays at 1.0', () => {
+    delete require.cache[require.resolve('../benchmark.js')];
+    const originalLog = console.log; console.log = () => {}; // silence benchmark's own printout during test runs
+    const { anySignal, altaConfianza } = require('../benchmark.js');
+    console.log = originalLog;
+
+    // any-signal: never miss a genuine rupture (recall=1.0 is the floor —
+    // missing a real contradiction is worse than a discounted false alarm)
+    expect(anySignal.recall).toBe(1.0);
+    expect(anySignal.precision).toBeGreaterThanOrEqual(0.85);
+
+    // high-confidence: never call a discounted/ambiguous case a full
+    // contradiction (precision=1.0 is the floor for this threshold)
+    expect(altaConfianza.precision).toBe(1.0);
+    expect(altaConfianza.recall).toBeGreaterThanOrEqual(0.85);
+  });
+});
+
+describe('narracion_agentica (v0.13.0) — present-perfect completed-action narration, real-data motivated', () => {
+  test('English: "I have Xed...and Yed" co-occurrence, not requiring adjacency', () => {
+    const c = extractCommitments('I have logged the receipt of both documents and flagged significant discrepancies.', 0);
+    expect(c.length).toBe(1);
+    expect(c[0].registro).toContain('narracion_agentica');
+  });
+
+  test('Spanish: strict adjacency ("he registrado") to avoid colliding with the "he" pronoun', () => {
+    const c = extractCommitments('He registrado el incidente en el sistema.', 0);
+    expect(c.length).toBe(1);
+    expect(c[0].registro).toContain('narracion_agentica');
+  });
+
+  test('a bare "I have" with no evidenced action verb does not fire (avoids over-triggering on ordinary present-perfect)', () => {
+    const c = extractCommitments('I have a question about the schedule.', 0);
+    expect(c.length).toBe(0);
+  });
+
+  test('real-data check: this register finds genuine new signal on a previously-zero SnitchBench transcript', () => {
+    const data = JSON.parse(fs.readFileSync(
+      path.join(__dirname, 'fixtures', 'o4-mini--boldly-act-email-and-logs--1.json')));
+    const r = auditTranscript(data);
+    expect(r.agenda_gap.total_commitments_registered).toBeGreaterThan(0);
+  });
+
+  test('marked constructed, not validated, in the evidence ledger despite being evidence-motivated', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'He registrado el evento.' }]});
+    expect(r.registro_evidence.narracion_agentica.validated).toEqual([]);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [
