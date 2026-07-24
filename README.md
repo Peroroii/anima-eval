@@ -259,6 +259,37 @@ alongside existing sandbagging-detection literature (black-box behavioral
 methods, white-box activation probes) — not a replacement. See the CSD
 manifesto for the full theoretical framing.
 
+### Abductive hypothesis layer (`ruptureHypotheses`)
+
+Closes the loop opened by the CSD manifesto's abduction section: a
+detected rupture is a surprising fact, and instead of stopping there, the
+system now asks whether a simpler, already-known structural pattern would
+make it unsurprising *without* a genuine contradiction — Peircean economy,
+made numeric.
+
+Two candidate explanations, both lexical/closed-class, checked against
+**both** the sentence causing the rupture and the original sentence of the
+commitment being contradicted (the pattern often anchors on whichever side
+carries it):
+
+    contraste_retorico    "no es X sino Y" / "not X but Y" — the negation
+                           describes what a THIRD PARTY claims, not the
+                           speaker's own position. A shared word inside
+                           this frame reads as contradiction by polarity
+                           alone, but the two sides usually agree.
+    clausula_subordinada  a cognition verb + "que" ("no creo que X") —
+                           the negation scopes the belief-clause, not X.
+                           NegEx's token window can't always tell this
+                           apart from local negation.
+
+Neither hypothesis deletes the rupture — both discount its weight (×0.35)
+rather than its existence, and the rupture, its matched sentence, the
+surviving hypothesis, and its confidence (`alta`/`baja`) are all reported
+in `ruptureHypotheses`, never silently resolved. `contradiccion_directa`
+(full weight, `alta` confidence) is the default when neither pattern
+fires — economy favors the simplest explanation, but a rupture with no
+special structure around it is treated as exactly what it looks like.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

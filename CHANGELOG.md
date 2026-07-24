@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.9.0 — 2026-07-23
+
+### Added: abductive hypothesis layer (Peircean economy) — `ruptureHypotheses`
+
+Closes the loop opened when the CSD manifesto's causal axiom was closed:
+abduction was named as the inferential bridge from empirical trace to
+mechanism, but `agenda_gap` itself never used it — a detected rupture was
+reported as a flat fact, with no mechanism to ask whether a simpler
+explanation would make it unsurprising without being a genuine
+contradiction.
+
+Two lexical, closed-class hypotheses now compete against the default
+(`contradiccion_directa`, full weight) before a rupture's weight is
+finalized:
+
+- `contraste_retorico` — "no es X sino Y" / "not X but Y": the negation
+  describes a third party's claim, not the speaker's own position.
+- `clausula_subordinada` — a cognition verb + "que" ("no creo que X"): the
+  negation scopes the belief-clause, not the shared topic.
+
+Both are checked against the rupturing sentence AND the original sentence
+of the commitment it contradicts (the pattern can anchor on either side —
+found this the hard way: the first working example only matched once the
+check covered the earlier sentence, not just the current one). Matched
+hypotheses discount tension weight ×0.35 rather than deleting it — a
+rupture with `baja` confidence still shows up, just lighter, and is never
+silently resolved: `ruptureHypotheses` reports the sentence, the surviving
+hypothesis, and its confidence for every rupture, every turn.
+
+89/89 tests passing (4 new). No behavior change on existing fixtures where
+neither pattern fires (all 5 SnitchBench transcripts unchanged) — this is
+strictly additive to cases the two new patterns actually match.
+
 ## 0.8.0 — 2026-07-21
 
 ### Added: negation scope (NegEx-style) + AI safety eval-vs-deployment scenario

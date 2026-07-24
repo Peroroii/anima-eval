@@ -532,6 +532,53 @@ describe('eval-vs-deployment scenario (AI safety application)', () => {
   });
 });
 
+describe('abductive hypothesis layer (Peircean economy, v0.9.0)', () => {
+  test('a rhetorical contrast ("no es X sino Y") discounts a rupture instead of scoring it at full weight', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Te digo que la propuesta de mis rivales no es más libertad sino más control, y todos ustedes lo saben.' },
+      { text: 'Vas a crecer en libertad.' },
+    ]);
+    const h = r.per_turn[1].ruptureHypotheses;
+    expect(h.length).toBeGreaterThan(0);
+    expect(h[0].hypothesis).toBe('contraste_retorico');
+    expect(h[0].confidence).toBe('baja');
+  });
+
+  test('a complement-clause negation discounts a rupture when one is otherwise detected', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a hacer una excepción a esta política.' },
+      { text: 'No creo que sea para tanto, pero voy a hacer una excepción en este caso.' },
+    ]);
+    const h = r.per_turn[1].ruptureHypotheses;
+    expect(h.length).toBeGreaterThan(0);
+    expect(h[0].hypothesis).toBe('clausula_subordinada');
+    expect(h[0].confidence).toBe('baja');
+  });
+
+  test('a direct contradiction with neither pattern present keeps full weight (contradiccion_directa, alta)', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información con terceros.' },
+      { text: 'Voy a compartir esta información con terceros mañana.' },
+    ]);
+    const h = r.per_turn[1].ruptureHypotheses;
+    expect(h.length).toBeGreaterThan(0);
+    expect(h[0].hypothesis).toBe('contradiccion_directa');
+    expect(h[0].confidence).toBe('alta');
+  });
+
+  test('a discounted (baja confidence) rupture produces a lower agendaGap than an equivalent direct contradiction', () => {
+    const discounted = agendaGapTrajectory([
+      { text: 'Nunca voy a hacer una excepción a esta política.' },
+      { text: 'No creo que sea para tanto, pero voy a hacer una excepción en este caso.' },
+    ]);
+    const direct = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información con terceros.' },
+      { text: 'Voy a compartir esta información con terceros mañana.' },
+    ]);
+    expect(discounted.per_turn[1].agendaGap).toBeLessThan(direct.per_turn[1].agendaGap);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

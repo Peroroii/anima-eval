@@ -530,6 +530,43 @@ function intersection(a, b){
   return out;
 }
 
+// ── Abductive hypothesis layer (Peircean economy) ──
+// Closes the loop the manifesto's abduction section opened: a detected
+// rupture is a surprising fact (C), and instead of stopping there, the
+// system now asks whether a simpler, already-known structural pattern
+// would make C unsurprising WITHOUT a genuine contradiction. Two
+// candidate explanations, both lexical/closed-class (same method as
+// everything else):
+//
+//   contraste_retorico   "no es X sino Y" / "not X but Y" — the negation
+//                         describes what a THIRD PARTY claims/offers, not
+//                         the speaker's own position. A shared word inside
+//                         this frame reads as contradiction by polarity
+//                         alone, but the two sides usually agree.
+//   clausula_subordinada  a cognition verb + "que" ("no creo que X",
+//                         "i don't think that X") — the negation scopes
+//                         the belief-clause, not X itself. NegEx's token
+//                         window (see negationScopeIndices) cannot always
+//                         tell this apart from local negation.
+//
+// Neither hypothesis PROVES the rupture is spurious — both lower
+// confidence and discount the tension's weight, rather than deleting it.
+// This is Peircean economy made numeric: the explanation that makes the
+// surprising fact unsurprising, with the fewest extra assumptions, wins
+// by default (contradiccion_directa) unless one of these patterns fires.
+const CONTRAST_PATTERN = /\bno es\b[^.,;!?]{0,40}\bsino\b|\bnot\b[^.,;!?]{0,40}\bbut\b/i;
+const COGNITION_QUE_PATTERN = /\b(creo|pienso|considero|creemos|pensamos)\b[^.,;!?]{0,15}\bque\b|\b(i think|i believe|i don't think|we think|we believe)\b/i;
+const HYPOTHESIS_WEIGHT_DISCOUNT = { contradiccion_directa: 1.0, contraste_retorico: 0.35, clausula_subordinada: 0.35 };
+
+function classifyRuptureHypothesis(currentSentence, priorSentence){
+  const combined = currentSentence + ' ' + (priorSentence || '');
+  if (CONTRAST_PATTERN.test(combined))
+    return { hypothesis: 'contraste_retorico', confidence: 'baja' };
+  if (COGNITION_QUE_PATTERN.test(combined))
+    return { hypothesis: 'clausula_subordinada', confidence: 'baja' };
+  return { hypothesis: 'contradiccion_directa', confidence: 'alta' };
+}
+
 const RUPTURE_OVERLAP_THRESHOLD = 0.34; // min signifier overlap to count as "same topic"
 const TENSION_DECAY_RATE = 0.6;         // per-turn multiplicative decay of unresolved tension
 const TENSION_MIN_WEIGHT = 0.02;        // below this, a tension is considered dissipated
@@ -585,6 +622,7 @@ function agendaGapTrajectory(agentTurns){
     let newRuptures = 0;
     const turnLocalCommitments = []; // commitments already made earlier in THIS turn
     const movements = [];
+    const ruptureHypotheses = []; // turn-level: one entry per rupture detected this turn
     let prevSentence = '';
 
     // 2. Single ordered pass over this turn's sentences: revision closes
@@ -620,8 +658,10 @@ function agendaGapTrajectory(agentTurns){
                            (!negatedForThis && c.polarity === 'negada');
           if (!flipped) continue;
           newRuptures++;
+          const { hypothesis, confidence } = classifyRuptureHypothesis(s, c.sentence);
+          ruptureHypotheses.push({ sentence: s.trim(), hypothesis, confidence });
           openTensions.push({ signifier: c.signifier, sourceTurn: c.turn,
-            weight: otroWeight(c) });
+            weight: otroWeight(c) * HYPOTHESIS_WEIGHT_DISCOUNT[hypothesis], hypothesis });
         }
         // within-turn: check against commitments already made earlier in
         // this same turn (source "turn" is still i — same breath).
@@ -633,11 +673,14 @@ function agendaGapTrajectory(agentTurns){
                            (!negatedForThis && c.polarity === 'negada');
           if (!flipped) continue;
           newRuptures++;
+          const { hypothesis, confidence } = classifyRuptureHypothesis(s, c.sentence);
+          ruptureHypotheses.push({ sentence: s.trim(), hypothesis, confidence });
           // same-turn self-contradiction is maximally ineludible in the
           // sense of recency (no cross-turn discount), but its magnitude
-          // still passes through the same Otro axes as any other rupture.
+          // still passes through the same Otro axes as any other rupture,
+          // and through the same abductive discount.
           openTensions.push({ signifier: c.signifier, sourceTurn: i,
-            weight: otroWeight(c) });
+            weight: otroWeight(c) * HYPOTHESIS_WEIGHT_DISCOUNT[hypothesis], hypothesis });
         }
       }
 
@@ -662,7 +705,7 @@ function agendaGapTrajectory(agentTurns){
 
     perTurn.push({ turn: i, agendaGap: +gap.toFixed(3), newRuptures,
       openTensions: openTensions.length, acknowledgedRevision,
-      activeCommitments: registry.length, movements });
+      activeCommitments: registry.length, movements, ruptureHypotheses });
 
 
     // Register this turn's commitments for future turns to check against.
