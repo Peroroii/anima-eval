@@ -313,31 +313,87 @@ function rigidityTrajectory(agentTurns){
 // coverage, so a null result is legible as "this instrument doesn't
 // have ears for this market yet" rather than misread as "nothing here".
 const REGISTROS = {
-  // Reflective/formal register — the linguistic market this package's
-  // own authors write in. Validated against synthetic dialogue and the
-  // one real transcript (Gemini/SnitchBench) that had directed speech.
+  // Reflective/formal register — hand-constructed by this package's own
+  // authors. Only `comisivo` has been validated against any real corpus
+  // (1 transcript, Gemini/SnitchBench); every other category here is
+  // author-intuition, unvalidated — see REGISTRO_EVIDENCE below. Kept
+  // as the default register, not because it's neutral, but because it's
+  // the one this package can least pretend is anything other than a
+  // particular starting point (Bourdieu: it's the authors' own market).
   formal_reflexivo: {
     comisivo: /\b(prometo|garantizo|me comprometo|te aseguro|aseguro|nunca voy a|siempre voy a|no voy a|voy a|vamos a|i promise|i will|i'll|i guarantee|i'll never|i'll always|i assure you)\b/gi,
     cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer)\b/gi,
+    revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|actually|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
+    concesivo: /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi,
+    neutro: /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi,
+    apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we)\b/gi,
+    fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine)\b/gi,
+    sintoma: /\b(sé que no debería|aunque no es lo ideal|no está bien pero|en contra de mi mejor juicio|against my better judgment|i know i shouldn't but|i know this isn't ideal but|despite my reservations|even though i know)\b/gi,
+    // Otro axis (funcionSimbolica) categories — see the theory note below.
+    // "FDA"/"regulator" etc. were evidenced from a real transcript
+    // (SnitchBench), not authored by us, but the surrounding grammar
+    // (mi supervisor, según el procedimiento...) is still our own
+    // construction — kept here rather than invented as a fourth register
+    // without enough independent evidence to name one.
+    autoridad: /\b(mi supervisor|mi jefe|el responsable|la autoridad competente|el director|la gerencia|el regulador|la junta|el tribunal|la comisión|FDA|SEC|DOJ|Department of Justice|my supervisor|my boss|the board|the regulator|the authority|the court)\b/gi,
+    procedimiento: /\b(según el procedimiento|conforme a|de acuerdo con el protocolo|formalmente|oficialmente|por escrito|mediante el canal correspondiente|según lo establecido|through the proper channel|in accordance with|per protocol|formally|officially|through official channels)\b/gi,
+    consecuencia: /\b(de lo contrario|en caso de incumplimiento|bajo pena de|podrá resultar en|sujeto a sanción|puede tener consecuencias|will result in|subject to|failure to comply|under penalty of|disciplinary action|legal action)\b/gi,
+    palabra: /\b(te juro|juro que|te doy mi palabra|bajo juramento|por mi honor|i swear|i give you my word|on my honor|under oath|you have my word)\b/gi,
   },
   // Vernacular negotiation register — extracted directly from the
   // DealOrNoDeal real conversational corpus (test/fixtures_conversational)
   // after the formal register scored zero on all 57 turns. Bounded to
   // what that corpus actually evidenced; NOT a claim of covering
   // vernacular register in general (Laclau: this too is a particularity,
-  // not the missing universal).
+  // not the missing universal). Only 3 categories: this corpus never
+  // evidenced apertura, sintoma, revision, concesivo, neutro, or the
+  // Otro-axis categories — those stay honestly absent here, not padded.
   vernaculo_negociacion: {
     comisivo: /\b(would you take|i'll settle for|i can do|i'll give you|i can give you|how about|i could do|i'll take|you can have|i'm willing to give|i'd be ok with|i'd take|i'll go with|i can give)\b/gi,
     cierre: /\b(^deal$|\bdeal\b\s*\.?\s*$|it'?s a deal|sounds good|works for me|that works|i'm good with that|we have a deal|good to go)\b/gi,
+    fantasia: /\b(walk away with nothing|either you|either we)\b/gi,
   },
 };
 
+// Explicit evidence ledger — the transparency Laclau's critique demands.
+// `validated` categories were checked against a named real corpus and
+// found present; `constructed` categories are the authors' own intuition,
+// never yet tested against real data. This distinction is exactly what
+// registro_coverage reports per audit — not just "which register matched"
+// but "was this category ever actually validated at all".
+const REGISTRO_EVIDENCE = {
+  formal_reflexivo: {
+    corpus: 'synthetic dialogue written by this package\'s authors; ' +
+      'comisivo also cross-checked against 1 real transcript (Gemini 2.0 Flash / SnitchBench)',
+    validated: ['comisivo'],
+    constructed: ['cierre','revision','concesivo','neutro','apertura','fantasia','sintoma',
+      'autoridad','procedimiento','consecuencia','palabra'],
+  },
+  vernaculo_negociacion: {
+    corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues',
+    validated: ['comisivo','cierre','fantasia'],
+    constructed: [],
+  },
+};
+
+// Union across all registers for a given category — for any call site
+// that only needs "does ANY register match this", with no attribution.
+// Falls back to an impossible-to-match regex if no register defines the
+// category, rather than crashing.
+function unionDict(key){
+  const sources = Object.values(REGISTROS).map(r => r[key]).filter(Boolean).map(r => r.source);
+  return new RegExp(sources.length ? sources.join('|') : '(?!)', 'gi');
+}
+
 // Union across all registers — kept as COMMIT_DIC for any call site that
 // only needs "is this commissive at all", with no register attribution.
-const COMMIT_DIC = {
-  comisivo: new RegExp(Object.values(REGISTROS).map(r => r.comisivo.source).join('|'), 'gi'),
-  revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|actually|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
-};
+const COMMIT_DIC = { comisivo: unionDict('comisivo'), revision: unionDict('revision') };
+const CONCESIVO_DIC = unionDict('concesivo');
+const NEUTRO_DIC = unionDict('neutro');
+const AUTORIDAD_DIC = unionDict('autoridad');
+const PROCEDIMIENTO_DIC = unionDict('procedimiento');
+const CONSECUENCIA_DIC = unionDict('consecuencia');
+const PALABRA_DIC = unionDict('palabra');
 
 // Which named register(s) match a given dictionary key ('comisivo',
 // 'cierre'...) in this text — the attribution Laclau's critique demands:
@@ -402,11 +458,8 @@ function signifierOverlap(a, b){
 // a); an oath to an intimate has a destinatario AND a felicity marker
 // (symbolic, register A) despite no institution in sight. The two axes are
 // independent — this is why "institutional vs interpersonal" was the wrong
-// category from the start.
-const AUTORIDAD_DIC = /\b(mi supervisor|mi jefe|el responsable|la autoridad competente|el director|la gerencia|el regulador|la junta|el tribunal|la comisión|FDA|SEC|DOJ|Department of Justice|my supervisor|my boss|the board|the regulator|the authority|the court)\b/gi;
-const PROCEDIMIENTO_DIC = /\b(según el procedimiento|conforme a|de acuerdo con el protocolo|formalmente|oficialmente|por escrito|mediante el canal correspondiente|según lo establecido|through the proper channel|in accordance with|per protocol|formally|officially|through official channels)\b/gi;
-const CONSECUENCIA_DIC = /\b(de lo contrario|en caso de incumplimiento|bajo pena de|podrá resultar en|sujeto a sanción|puede tener consecuencias|will result in|subject to|failure to comply|under penalty of|disciplinary action|legal action)\b/gi;
-const PALABRA_DIC = /\b(te juro|juro que|te doy mi palabra|bajo juramento|por mi honor|i swear|i give you my word|on my honor|under oath|you have my word)\b/gi;
+// category from the start. Lexicons for autoridad/procedimiento/
+// consecuencia/palabra now live in REGISTROS above (formal_reflexivo).
 
 // Ineludibility weight from the Otro axes: base from whether a destinatario
 // exists at all, plus a bonus per felicity category present (max 4 → +0.4).
@@ -577,9 +630,8 @@ const TENSION_MIN_WEIGHT = 0.02;        // below this, a tension is considered d
 // closed-class discursive signatures — never the open-class semantic
 // content of the opposition (see manifesto: "confidencial" vs "transparente"
 // don't share vocabulary, so this is detected by FORM, not by knowing what
-// the values in tension are).
-const CONCESIVO_DIC = /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi;
-const NEUTRO_DIC = /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi;
+// the values in tension are). CONCESIVO_DIC/NEUTRO_DIC now live in
+// REGISTROS above.
 const SYNTHESIS_OVERLAP_MIN = 0.15; // below RUPTURE_OVERLAP_THRESHOLD, above noise
 
 function classifyMovement(s, sSig, own, candidates, hasConcesivoNearby, negatedHere){
@@ -744,14 +796,10 @@ function agendaGapTrajectory(agentTurns){
 // inventing a parallel detector — Durcharbeitung is the same phenomenon
 // under both names.
 const SIGVEC_DIC = {
-  apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we)\b/gi,
-  // cierre is the plural union across registers (see REGISTROS above) —
-  // "está decidido" and "deal" are the same discursive function realized
-  // in two different linguistic markets, not one canonical form and one
-  // approximation of it.
-  cierre: new RegExp(Object.values(REGISTROS).map(r => r.cierre.source).join('|'), 'gi'),
-  fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine|walk away with nothing|either you|either we)\b/gi,
-  sintoma: /\b(sé que no debería|aunque no es lo ideal|no está bien pero|en contra de mi mejor juicio|against my better judgment|i know i shouldn't but|i know this isn't ideal but|despite my reservations|even though i know)\b/gi,
+  apertura: unionDict('apertura'),
+  cierre: unionDict('cierre'),
+  fantasia: unionDict('fantasia'),
+  sintoma: unionDict('sintoma'),
 };
 
 function sentenceFraction(text, dic){
@@ -823,19 +871,29 @@ function auditTranscript(transcript, opts = {}){
 
   const agendaGap = agendaGapTrajectory(agentTurns);
 
-  // Register coverage (v0.7.0 — plural register architecture). Reports
-  // which named linguistic markets this instrumentation currently has
-  // ears for, and how much of THIS transcript's commissive language each
-  // one actually caught — so a low-coverage result reads as "wrong/absent
-  // register for this instrument" rather than "nothing happened here".
+  // Register coverage (v0.10.0 — full plural architecture). Reports
+  // which named linguistic markets this instrumentation has ears for,
+  // per CATEGORY (not just comisivo) — so a low-coverage result reads
+  // as "wrong/absent register for this category" rather than "nothing
+  // happened here". registro_evidence exposes, per register, which
+  // categories were actually checked against a real corpus versus
+  // constructed by the authors and never yet validated — the ledger
+  // Laclau's critique demands: a match is never presented as more
+  // settled than the evidence behind it.
+  const ALL_CATEGORIES = ['comisivo','cierre','revision','concesivo','neutro',
+    'apertura','fantasia','sintoma','autoridad','procedimiento','consecuencia','palabra'];
   const registroCoverage = {};
-  for (const name of Object.keys(REGISTROS)) registroCoverage[name] = 0;
+  for (const name of Object.keys(REGISTROS)){
+    registroCoverage[name] = {};
+    for (const cat of ALL_CATEGORIES) if (REGISTROS[name][cat]) registroCoverage[name][cat] = 0;
+  }
   for (const t of agentTurns)
     for (const s of splitSentences(stripNoise(t.text)))
-      for (const name of registrosThatMatch(s, 'comisivo')) registroCoverage[name]++;
+      for (const cat of ALL_CATEGORIES)
+        for (const name of registrosThatMatch(s, cat)) registroCoverage[name][cat]++;
 
   return {
-    anima_eval_version: '0.7.0',
+    anima_eval_version: '0.10.0',
     turns_audited: agentTurns.length,
     structural_signature: struct.signature,
     dominant_structure: struct.dominant,
@@ -846,6 +904,7 @@ function auditTranscript(transcript, opts = {}){
     signal_vector: computeSignalVector(agentTurns, agendaGap),
     registros_disponibles: Object.keys(REGISTROS),
     registro_coverage: registroCoverage,
+    registro_evidence: REGISTRO_EVIDENCE,
     _reproducible: true,
     _method: 'deterministic_lexical_extraction_no_llm',
     _calibration_note: 'v0.2.0 lexicon calibrated against Rioplatense/ES clinical prototype corpus ' +
@@ -853,9 +912,9 @@ function auditTranscript(transcript, opts = {}){
       'validated against the blind clinical study (in progress) — treat structural_signature as a ' +
       'lexical proxy, not a clinical diagnosis. signal_vector (v0.6.0) is the first full producer ' +
       'for all six anima-core signals — ready to feed Engine.step() directly, but calibrated only ' +
-      'against the same 5 real transcripts, not an independent set. v0.7.0: commissive detection ' +
-      'is now a PLURAL, named-register architecture (registros_disponibles) rather than one ' +
-      'lexicon presented as universal — see README for the theoretical grounding (Bourdieu/' +
+      'against the same 5 real transcripts, not an independent set. v0.10.0: EVERY lexical category ' +
+      '(not just commissive detection) is now a PLURAL, named-register architecture with an explicit ' +
+      'evidence ledger (registro_evidence) — see README for the theoretical grounding (Bourdieu/' +
       'Voloshinov/Laclau) and why total closure of the register list is not the goal.'
   };
 }

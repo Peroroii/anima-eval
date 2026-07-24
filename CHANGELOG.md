@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.10.0 — 2026-07-23
+
+### Changed: full plural register architecture — all 12 categories, not just 2
+
+Direct follow-through on the v0.7.0 corollary: `comisivo` and `cierre`
+got the plural, attributed, evidence-tracked treatment, but every other
+lexical category (`revision`, `concesivo`, `neutro`, `apertura`,
+`fantasia`, `sintoma`, and the four Otro-axis felicity categories
+`autoridad`/`procedimiento`/`consecuencia`/`palabra`) remained scattered
+standalone dictionaries quietly presenting themselves as universal — the
+exact inconsistency the Bourdieu/Voloshinov/Laclau corollary was written
+to rule out. Fixed by consolidating everything into `REGISTROS`.
+
+- All 12 categories now live under named registers, checked through the
+  same `registrosThatMatch()` / `unionDict()` mechanism. No behavior
+  change for any existing call site — `unionDict()` reproduces the exact
+  same union regexes the standalone dictionaries used to be, so all 90
+  pre-existing tests pass unchanged.
+- Added `REGISTRO_EVIDENCE`: an explicit ledger, per register, of which
+  categories were checked against a named real corpus (`validated`) vs.
+  authored by this package's own writers and never yet tested
+  (`constructed`). Only `comisivo` (formal_reflexivo) and `comisivo`/
+  `cierre`/`fantasia` (vernaculo_negociacion) are currently `validated` —
+  the other 9 categories in `vernaculo_negociacion` are honestly absent
+  (that corpus never evidenced them), not padded to look complete.
+- `registro_coverage` is now per-category (`{register: {category: count}}`)
+  instead of a single comisivo-only count per register, exposed via
+  `auditTranscript()`.
+
+95/95 tests passing (5 new). No regression on any of the three real
+corpora (SnitchBench, DealOrNoDeal, agentic misalignment) — identical
+`agenda_gap` values to v0.9.0 across all 18 fixtures.
+
 ## Unreleased — multi-provider agentic misalignment corpus (real, null finding)
 
 Added `test/fixtures_agentic_misalignment/` — 5 short excerpts directly

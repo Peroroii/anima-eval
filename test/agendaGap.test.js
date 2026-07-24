@@ -97,8 +97,10 @@ describe('plural register architecture (v0.7.0 — Bourdieu/Voloshinov/Laclau)',
     ]});
     expect(r.registros_disponibles).toEqual(
       expect.arrayContaining(['formal_reflexivo', 'vernaculo_negociacion']));
-    expect(r.registro_coverage.formal_reflexivo).toBeGreaterThan(0);
-    expect(r.registro_coverage.vernaculo_negociacion).toBe(0);
+    const totalFormal = Object.values(r.registro_coverage.formal_reflexivo).reduce((a,b)=>a+b, 0);
+    const totalVern = Object.values(r.registro_coverage.vernaculo_negociacion).reduce((a,b)=>a+b, 0);
+    expect(totalFormal).toBeGreaterThan(0);
+    expect(totalVern).toBe(0);
   });
 
   test('no dictionary silently claims universality: every register is named and bounded', () => {
@@ -107,7 +109,8 @@ describe('plural register architecture (v0.7.0 — Bourdieu/Voloshinov/Laclau)',
     const r = auditTranscript({ turns: [
       { speaker: 'agent', text: "I'll settle for the hat, deal?" },
     ]});
-    const total = Object.values(r.registro_coverage).reduce((a,b)=>a+b, 0);
+    const total = Object.values(r.registro_coverage)
+      .flatMap(cats => Object.values(cats)).reduce((a,b)=>a+b, 0);
     expect(total).toBeGreaterThan(0);
   });
 });
@@ -455,7 +458,8 @@ describe('computeSignalVector — the five remaining σ(t) producers', () => {
       const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
       const bothSides = { turns: data.turns.map(t => ({ ...t, speaker: 'agent' })) };
       const r = auditTranscript(bothSides);
-      vernaculoHits += r.registro_coverage.vernaculo_negociacion || 0;
+      vernaculoHits += (r.registro_coverage.vernaculo_negociacion &&
+        Object.values(r.registro_coverage.vernaculo_negociacion).reduce((a,b)=>a+b,0)) || 0;
       for (const s of r.signal_vector)
         for (const k of Object.keys(nonzero)) if (s[k] > 0) nonzero[k]++;
     }
@@ -601,6 +605,44 @@ describe('multi-provider agentic misalignment corpus (real, Anthropic 2025)', ()
     }
     expect(anyCommitmentExtracted).toBe(false); // documents current reality
     expect(anySignal).toBe(false);
+  });
+});
+
+describe('full plural architecture (v0.10.0) — every category, not just comisivo', () => {
+  test('registro_evidence distinguishes validated categories from author-constructed ones', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text:'Voy a enviarte el resumen.' }]});
+    expect(r.registro_evidence.formal_reflexivo.validated).toContain('comisivo');
+    expect(r.registro_evidence.formal_reflexivo.constructed).toContain('sintoma');
+    expect(r.registro_evidence.vernaculo_negociacion.validated).toEqual(
+      expect.arrayContaining(['comisivo', 'cierre', 'fantasia']));
+  });
+
+  test('registro_coverage reports per-category counts, not just comisivo', () => {
+    const r = auditTranscript({ turns: [
+      { speaker:'agent', text: 'Tenés razón, le voy a contar todo al equipo sin filtros.' },
+    ]});
+    expect(r.registro_coverage.formal_reflexivo.concesivo).toBeGreaterThan(0);
+  });
+
+  test('an authority mention is attributed through the same plural architecture as comisivo', () => {
+    const r = auditTranscript({ turns: [
+      { speaker:'agent', text: 'Voy a informar a mi supervisor sobre esto.' },
+    ]});
+    expect(r.registro_coverage.formal_reflexivo.autoridad).toBeGreaterThan(0);
+  });
+
+  test('vernaculo_negociacion has no coverage for categories that corpus never evidenced (concesivo, autoridad, etc.)', () => {
+    const r = auditTranscript({ turns: [
+      { speaker:'agent', text: 'Would you take the ball and the hat? Deal.' },
+    ]});
+    expect(r.registro_coverage.vernaculo_negociacion.concesivo).toBeUndefined();
+    expect(r.registro_coverage.vernaculo_negociacion.autoridad).toBeUndefined();
+  });
+
+  test('unionDict never crashes for a category with only one register defining it', () => {
+    expect(() => auditTranscript({ turns: [
+      { speaker:'agent', text: 'Cualquier texto neutro sin marcadores especiales.' },
+    ]})).not.toThrow();
   });
 });
 
