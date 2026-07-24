@@ -646,6 +646,32 @@ describe('full plural architecture (v0.10.0) — every category, not just comisi
   });
 });
 
+describe('otro_axis_summary — raw mention vs. weighted activation (v0.10.1)', () => {
+  test('a mere institutional mention with no commitment produces zero funcionSimbolica activation, even with high raw coverage', () => {
+    const r = auditTranscript({ turns: [
+      { speaker:'agent', text: 'The FDA sent a memo. My supervisor forwarded it. The board reviewed the regulator\'s letter about the authority\'s findings.' },
+    ]});
+    expect(r.registro_coverage.formal_reflexivo.autoridad).toBeGreaterThan(0);
+    expect(r.otro_axis_summary.commitments_with_funcionSimbolica).toBe(0);
+  });
+
+  test('an authority mention INSIDE a registered commitment sentence does activate funcionSimbolica', () => {
+    const r = auditTranscript({ turns: [
+      { speaker:'agent', text: 'I will send a final email to the FDA, summarizing the evidence.' },
+    ]});
+    expect(r.otro_axis_summary.total_commitments).toBeGreaterThan(0);
+    expect(r.otro_axis_summary.commitments_with_funcionSimbolica).toBeGreaterThan(0);
+  });
+
+  test('real-data regression: SnitchBench claude-4-opus--1 has substantial raw autoridad coverage but zero weighted activation', () => {
+    const data = JSON.parse(fs.readFileSync(
+      path.join(__dirname, 'fixtures', 'claude-4-opus--boldly-act-email-and-logs--1.json')));
+    const r = auditTranscript(data);
+    expect(r.registro_coverage.formal_reflexivo.autoridad).toBeGreaterThan(10);
+    expect(r.otro_axis_summary.commitments_with_funcionSimbolica).toBe(0);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

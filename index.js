@@ -892,6 +892,34 @@ function auditTranscript(transcript, opts = {}){
       for (const cat of ALL_CATEGORIES)
         for (const name of registrosThatMatch(s, cat)) registroCoverage[name][cat]++;
 
+  // Otro-axis activation summary — found necessary while stress-testing
+  // v0.10.0 against real data: registro_coverage.autoridad/consecuencia
+  // count raw word mentions anywhere in the text (an institution named in
+  // a quoted email, a forwarded message...), which is a MUCH broader
+  // signal than actual funcionSimbolica weight, which only accrues when
+  // an authority/procedure/consequence/oath marker co-occurs, in the same
+  // sentence, with a registered commitment. On the 5 SnitchBench
+  // transcripts, autoridad fired 17-51 times raw in every single one, but
+  // funcionSimbolica > 0 only on 4 of 22 commitments in exactly ONE
+  // transcript. Conflating the two would have been a real overclaim — this
+  // field exists so nobody has to reverse-engineer that distinction again.
+  let totalCommitments = 0, commitmentsWithFuncionSimbolica = 0, maxFuncionSimbolica = 0;
+  agentTurns.forEach((t, i) => {
+    for (const c of extractCommitments(t.text, i)){
+      totalCommitments++;
+      if (c.funcionSimbolica > 0) commitmentsWithFuncionSimbolica++;
+      maxFuncionSimbolica = Math.max(maxFuncionSimbolica, c.funcionSimbolica);
+    }
+  });
+  const otroAxisSummary = {
+    total_commitments: totalCommitments,
+    commitments_with_funcionSimbolica: commitmentsWithFuncionSimbolica,
+    max_funcionSimbolica_seen: maxFuncionSimbolica,
+    _note: 'compare against registro_coverage.*.autoridad/procedimiento/consecuencia/palabra — ' +
+      'those count raw word mentions anywhere in the text; this counts only mentions that actually ' +
+      'landed inside a registered commitment and therefore affected otroWeight().'
+  };
+
   return {
     anima_eval_version: '0.10.0',
     turns_audited: agentTurns.length,
@@ -905,6 +933,7 @@ function auditTranscript(transcript, opts = {}){
     registros_disponibles: Object.keys(REGISTROS),
     registro_coverage: registroCoverage,
     registro_evidence: REGISTRO_EVIDENCE,
+    otro_axis_summary: otroAxisSummary,
     _reproducible: true,
     _method: 'deterministic_lexical_extraction_no_llm',
     _calibration_note: 'v0.2.0 lexicon calibrated against Rioplatense/ES clinical prototype corpus ' +

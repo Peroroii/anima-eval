@@ -320,6 +320,28 @@ build one without violating this package's own rule against inventing
 lexicons without a real corpus behind them. Documented as an open gap,
 not silently patched.
 
+### Raw coverage vs. weighted activation (`otro_axis_summary`)
+
+Stress-testing the full v0.10.0 coverage report against real data surfaced
+a distinction worth making explicit rather than leaving implicit: **a
+category firing in `registro_coverage` is not the same as it affecting
+the result.** `autoridad`/`consecuencia`/`procedimiento`/`palabra` count
+raw word mentions anywhere in the text — an institution named in a quoted
+email, a forwarded message someone else wrote — which is structurally
+broader than `funcionSimbolica`, which only accrues when one of those
+markers co-occurs, in the same sentence, with an actually-registered
+commitment.
+
+On the 5 real SnitchBench transcripts: `autoridad` fired 17-51 times raw
+in every single one, but `funcionSimbolica > 0` only on 4 of 22
+commitments, in exactly one transcript. Read naively, the raw coverage
+numbers would suggest the Otro axis is doing substantial work across this
+corpus — it isn't; it's almost entirely inert on real data so far, and
+the raw mentions are mostly noise (institutions named in narration, not
+commitments the agent itself made). `otro_axis_summary` reports both
+numbers side by side precisely so this doesn't have to be reverse-
+engineered again the way it was here.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

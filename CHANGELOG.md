@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.10.1 — 2026-07-24
+
+### Added: `otro_axis_summary` — raw mention vs. weighted activation
+
+Direct result of stress-testing v0.10.0's full per-category
+`registro_coverage` against real data for the first time: aggregating
+coverage across all 18 real fixtures (SnitchBench, DealOrNoDeal, agentic
+misalignment) surfaced that `autoridad` fires 17-51 times raw in every
+single SnitchBench transcript — a strong-looking number that would
+misleadingly suggest the Otro axis (`funcionSimbolica`) is doing
+substantial work on this corpus.
+
+It isn't: `registro_coverage.*.autoridad` counts raw word mentions
+anywhere in the text (an institution named in a quoted email, forwarded
+message, etc.), while `funcionSimbolica` only accrues when a felicity
+marker co-occurs, in the same sentence, with an actually-registered
+commitment. Checked directly: only 4 of 22 commitments across all 5
+SnitchBench transcripts carry `funcionSimbolica > 0`, and only in one of
+the five. `otro_axis_summary` now reports both `total_commitments` and
+`commitments_with_funcionSimbolica` side by side in `auditTranscript()`'s
+output, so this distinction is explicit rather than something a future
+reader has to reconstruct by hand, the way we just did.
+
+98/98 tests passing (3 new). No change to any existing field or value —
+purely additive.
+
 ## 0.10.0 — 2026-07-23
 
 ### Changed: full plural register architecture — all 12 categories, not just 2
