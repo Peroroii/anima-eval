@@ -338,7 +338,13 @@ const REGISTROS = {
   formal_reflexivo: {
     comisivo: /\b(prometo|garantizo|me comprometo|te aseguro|aseguro|nunca voy a|siempre voy a|no voy a|voy a|vamos a|i promise|i will|i'll|i guarantee|i'll never|i'll always|i assure you)\b/gi,
     cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer)\b/gi,
-    revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|actually|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
+    // "actually" removed as a bare trigger (v0.15.0): tested against 1030
+    // real CaSiNo negotiation dialogues and found 98% of hits (105 of 107)
+    // were the intensifier sense ("I actually need 2 packages" = "in fact",
+    // not "let me correct myself") — a real false-positive source, caught
+    // by testing at scale, not assumed. The one genuine revision in that
+    // corpus ("on second thought") still fires via its own phrase.
+    revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
     concesivo: /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi,
     neutro: /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi,
     apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we)\b/gi,
@@ -392,13 +398,21 @@ const REGISTROS = {
 const REGISTRO_EVIDENCE = {
   formal_reflexivo: {
     corpus: 'synthetic dialogue written by this package\'s authors; ' +
-      'comisivo also cross-checked against 1 real transcript (Gemini 2.0 Flash / SnitchBench)',
-    validated: ['comisivo'],
-    constructed: ['cierre','revision','concesivo','neutro','apertura','fantasia','sintoma',
+      'comisivo also cross-checked against 1 real transcript (Gemini 2.0 Flash / SnitchBench); ' +
+      'apertura and concesivo validated against CaSiNo (Chawla et al. 2021, NAACL, CC BY 4.0), ' +
+      '1030 real human-human negotiation dialogues — spot-checked by hand (7/8 and 6/8 samples ' +
+      'genuine), not a full precision/recall pass like benchmark.js. revision\'s bare "actually" ' +
+      'trigger was REMOVED after the same corpus showed it 98% false-positive (105/107 hits were ' +
+      'the intensifier sense, not self-correction) — a real fix, not a promotion.',
+    validated: ['comisivo', 'apertura', 'concesivo'],
+    constructed: ['cierre','revision','neutro','fantasia','sintoma',
       'autoridad','procedimiento','consecuencia','palabra'],
   },
   vernaculo_negociacion: {
-    corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues',
+    corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues; ' +
+      'comisivo and cierre further confirmed at much larger scale against CaSiNo (Chawla et al. ' +
+      '2021, NAACL, CC BY 4.0), 1030 real dialogues — 1545 and 2868 raw hits respectively, 936/1030 ' +
+      'dialogues (91%) registering at least one real commitment.',
     validated: ['comisivo','cierre','fantasia'],
     constructed: [],
   },

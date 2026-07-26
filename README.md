@@ -482,6 +482,38 @@ order. `registro_evidence.narracion_agentica` still reads `constructed`,
 not `validated` — evidence-motivated, not the same as a validated
 register.
 
+### CaSiNo — from 4/12 to 6/12 validated categories, plus a real fix
+
+Direct response to the single highest-priority gap flagged by an external
+review of this project: too few categories had real-corpus evidence, and
+the one vernacular corpus (DealOrNoDeal) had only 8 dialogues — too small
+to move a category from `constructed` to `validated` with confidence.
+Ran the full plural architecture and `poderDiscursivo` against **CaSiNo**
+(Chawla et al. 2021, NAACL, CC BY 4.0) — 1030 real human-human negotiation
+dialogues, two orders of magnitude bigger than DealOrNoDeal.
+
+**Scale confirms the existing findings**: 936/1030 dialogues (91%)
+register a real commitment; `vernaculo_negociacion`'s `comisivo`/`cierre`
+get 1545/2868 raw hits, a much larger confirmation of the same signal.
+`autoridadEpistemica` stays an honest null throughout — nobody claims
+epistemic authority negotiating firewood, replicating the smaller
+DealOrNoDeal finding with 1030 data points instead of 8.
+
+**Two new categories promoted to `validated`** (`apertura`, `concesivo`
+in `formal_reflexivo`): hand-spot-checked real hits ("shall we...", "what
+if we trade..." / "fair enough", "you're right") came back genuine
+(7/8, 6/8 checked) — a spot-check, not a full precision/recall pass like
+`benchmark.js`, and reported as exactly that.
+
+**A real bug found and fixed, not just a promotion**: `revision`'s bare
+`"actually"` trigger produced 107 hits at this scale, of which 105 (98%)
+were the intensifier sense ("I actually need 2 packages" = "in fact"),
+not self-correction — the single genuine revision in the whole corpus
+("on second thought") fires through its own phrase. `"actually"` was
+removed from the trigger list as a direct result. Testing at real scale
+didn't just add evidence — it overturned a category that looked fine on
+small examples.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.15.0 — 2026-07-26
+
+### Added/Fixed: CaSiNo validation — 4/12 to 6/12 categories, one real bug fixed
+
+Ran the full plural architecture against CaSiNo (Chawla et al. 2021,
+NAACL, CC BY 4.0), 1030 real human-human negotiation dialogues — two
+orders of magnitude bigger than the existing DealOrNoDeal corpus (8
+dialogues). Direct response to the top-priority gap in an external
+review: too few categories had real-corpus evidence behind them.
+
+- 936/1030 dialogues (91%) register a real commitment; `comisivo`/`cierre`
+  in `vernaculo_negociacion` get 1545/2868 raw hits — a much larger
+  confirmation of the existing DealOrNoDeal finding.
+- `apertura` and `concesivo` (`formal_reflexivo`) promoted to `validated`
+  after hand spot-checking real hits (7/8, 6/8 genuine) — reported as a
+  spot-check, not a full precision/recall pass.
+- **Fixed**: `revision`'s bare `"actually"` trigger was 98% false-positive
+  at this scale (105/107 hits were the intensifier sense, not
+  self-correction) — removed from the trigger list. The corpus's one
+  genuine revision ("on second thought") still fires via its own phrase.
+- `autoridadEpistemica` (`poderDiscursivo`) replicated as an honest null
+  across all 1030 dialogues.
+
+Added `test/fixtures_casino/casino_sample.json` (first 50 dialogues,
+committed regression fixture; full corpus findings reproducible from the
+source repo) with `ATTRIBUTION.md`. 130/130 tests passing (7 new). No
+regression on benchmark or any other real corpus.
+
 ## 0.14.0 — 2026-07-24
 
 ### Fixed: SnitchBench gap fully closed — three real bugs, found in sequence

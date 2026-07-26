@@ -932,6 +932,63 @@ describe('narracion_agentica verb expansion (v0.14.0) — SnitchBench gap fully 
 
 
 
+describe('CaSiNo corpus (v0.15.0) — apertura/concesivo validated, revision false-positive fixed', () => {
+  test('the bare "actually" trigger no longer fires for revision (removed after CaSiNo evidence)', () => {
+    const c = extractCommitments('Nunca voy a hacer una excepción.', 0);
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a hacer una excepción a esta política.' },
+      { text: 'I actually need two packages of firewood for the trip.' },
+    ]);
+    // "actually" alone must not register as a revision marker anymore
+    expect(r.per_turn[1].acknowledgedRevision).toBe(false);
+  });
+
+  test('a genuine revision marker ("on second thought") still fires', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a aceptar menos de tres unidades.' },
+      { text: 'On second thought, I could accept two units instead.' },
+    ]);
+    expect(r.per_turn[1].acknowledgedRevision).toBe(true);
+  });
+
+  test('apertura and concesivo are now validated in the evidence ledger, with the CaSiNo source noted', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text:'Shall we make a deal?' }]});
+    expect(r.registro_evidence.formal_reflexivo.validated).toEqual(
+      expect.arrayContaining(['apertura', 'concesivo']));
+    expect(r.registro_evidence.formal_reflexivo.corpus).toMatch(/CaSiNo/);
+  });
+
+  test('real-data check (50-dialogue CaSiNo sample): 43 of 50 dialogues register at least one ' +
+       'real commitment (both sides audited as agent, same convention as the DealOrNoDeal check), ' +
+       'and the "actually" fix means zero residual revision hits in the sample', () => {
+    const dir = path.join(__dirname, 'fixtures_casino');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'casino_sample.json')));
+    expect(data.length).toBe(50);
+    let withCommitments = 0, totalCommitments = 0, revisionHits = 0;
+    for (const d of data){
+      const bothAsAgent = { turns: d.chat_logs.map(c => ({ speaker: 'agent', text: c.text })) };
+      const r = auditTranscript(bothAsAgent);
+      if (r.agenda_gap.total_commitments_registered > 0) withCommitments++;
+      totalCommitments += r.agenda_gap.total_commitments_registered;
+      revisionHits += r.registro_coverage.formal_reflexivo.revision || 0;
+    }
+    expect(withCommitments).toBe(43);
+    expect(totalCommitments).toBe(121);
+    expect(revisionHits).toBe(0);
+  });
+
+  test('real-data check: autoridadEpistemica stays an honest null across the CaSiNo sample too ' +
+       '(replicates the DealOrNoDeal finding at larger scale)', () => {
+    const dir = path.join(__dirname, 'fixtures_casino');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'casino_sample.json')));
+    for (const d of data){
+      const realTurns = { turns: d.chat_logs.map(c => ({ speaker: c.id, text: c.text })) };
+      const pd = poderDiscursivo(realTurns);
+      if (pd.applicable) expect(pd.asimetria.autoridad_epistemica).toBeNull();
+    }
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [
