@@ -989,6 +989,53 @@ describe('CaSiNo corpus (v0.15.0) — apertura/concesivo validated, revision fal
   });
 });
 
+describe('deployment hygiene (v0.16.0) — structural guard against the /g + .test() bug class', () => {
+  test('no regex declared with a /g flag is ever used with .test() anywhere in index.js — ' +
+       'the exact combination that caused the lastIndex statefulness bug (v0.14.0): a global ' +
+       'regex\'s .test() keeps state (lastIndex) between calls, so the same input can silently ' +
+       'return different results depending on what was tested before it, with no error thrown. ' +
+       'This scans the actual source file, not a curated list, so a future occurrence is caught ' +
+       'automatically rather than relying on someone remembering to check by hand.',
+       () => {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'index.js'), 'utf8');
+    const declRe = /const\s+([A-Z_][A-Z0-9_]*)\s*=\s*\/(?:[^\/\\]|\\.)*\/([a-z]*)\s*;/g;
+    let m, offenders = [];
+    while ((m = declRe.exec(src))) {
+      const [, name, flags] = m;
+      if (flags.includes('g')) {
+        const testUsage = new RegExp(`\\b${name}\\.test\\(`);
+        if (testUsage.test(src)) offenders.push(name);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  test('property-based: normalization is robust to straight/curly quote variants, generated ' +
+       'automatically from real trigger phrases instead of relying on someone remembering to add ' +
+       'a case by hand — the class of bug that already cost us once (U+2019, v0.14.0)', () => {
+    const baseSentences = [
+      "I've logged the incident and flagged the report.",
+      "I'll never share this information.",
+      "I'm sure this is correct, always.",
+    ];
+    for (const s of baseSentences) {
+      const straight = s;
+      const curlyApostrophe = s.replace(/'/g, '\u2019');
+      const straightResult = JSON.stringify(extractCommitments(straight, 0));
+      const curlyResult = JSON.stringify(extractCommitments(curlyApostrophe, 0));
+      expect(curlyResult).toBe(straightResult);
+    }
+  });
+
+  test('property-based: normalization is robust to curly double-quote variants too', () => {
+    const s = 'She said "I will handle it" and left.';
+    const curly = s.replace(/"([^"]*)"/, '\u201C$1\u201D');
+    const r1 = structuralSignature(s);
+    const r2 = structuralSignature(curly);
+    expect(r1._signal_strength).toBe(r2._signal_strength);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

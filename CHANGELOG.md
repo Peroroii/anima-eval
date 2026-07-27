@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.16.0 — 2026-07-27
+
+### Added: deployment hygiene guards (Fase 1 of the AI-safety architecture roadmap)
+
+First item of an explicit roadmap to make the instrument safer to *use*,
+not just more capable. Two structural guards, both motivated by real bugs
+already found in this project, not abstract caution:
+
+- A test statically scans `index.js` for any regex declared with a `/g`
+  flag ever used with `.test()` — the exact combination that caused the
+  `lastIndex` statefulness bug (v0.14.0), where the same input silently
+  returned different results depending on execution order. Scans the
+  real source, not a curated list — a future occurrence is caught
+  automatically.
+- Property-based tests generate Unicode quote variants (straight vs.
+  curly apostrophes/quotes) automatically from real trigger phrases and
+  confirm detection is unchanged — the full class of bug behind the
+  U+2019 issue (v0.14.0), guarded once instead of case by case.
+
+133/133 tests passing (3 new). No functional code changed — pure guard
+addition.
+
 ## 0.15.0 — 2026-07-26
 
 ### Added/Fixed: CaSiNo validation — 4/12 to 6/12 categories, one real bug fixed

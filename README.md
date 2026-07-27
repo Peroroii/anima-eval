@@ -514,6 +514,27 @@ removed from the trigger list as a direct result. Testing at real scale
 didn't just add evidence — it overturned a category that looked fine on
 small examples.
 
+### Higiene de despliegue (Fase 1 de la hoja de ruta de arquitectura de seguridad)
+
+Primer ítem de una hoja de ruta explícita para hacer más seguro *usar* el
+instrumento, no solo para hacerlo más capaz. Dos guardas estructurales,
+ambas motivadas por bugs reales ya encontrados en este proyecto, no por
+precaución abstracta:
+
+**Guarda contra la clase de bug `lastIndex`.** Un test escanea el código
+fuente real (no una lista curada) buscando cualquier regex declarada con
+flag `/g` que se use alguna vez con `.test()` — la combinación exacta que
+causó que el mismo input diera resultados distintos según el orden de
+ejecución (v0.14.0). Si esa combinación vuelve a aparecer, el test falla
+antes de que nadie tenga que acordarse de revisarlo a mano.
+
+**Tests de propiedad para normalización.** En vez de confiar en que
+alguien agregue a mano el próximo caso de comilla tipográfica, un test
+genera automáticamente variantes Unicode (apóstrofe recto vs. curvo,
+comillas dobles rectas vs. tipográficas) a partir de frases reales, y
+confirma que el resultado no cambia — la clase completa de bug que ya
+costó una sesión entera de investigación (v0.14.0), blindada de una vez.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,
