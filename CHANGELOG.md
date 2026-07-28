@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.30.0 — 2026-07-28
+
+### Added: cierre validated. Documented: sintoma stays honestly open
+
+**cierre**: the existing lexicon (mainly "final answer", never tested
+against real data) found 42 real hits on its own in DeliData. Added
+"final decision" (evidenced, unambiguous — the platform's actual
+submission button is literally "Final Decision and Submit"), bringing
+the total to 147 hits, 115/500 dialogues, precision spot-checked at
+17/17 on an evenly-sampled subset. Promoted to `validated`.
+
+**sintoma**: checked against all three real corpora in hand (CaSiNo,
+DeliData, QAEvasion). Result: only 8 genuine instances total. Real, but
+far below any other promoted category. Not chased — stays `constructed`,
+documented rather than hidden.
+
+This completes the review of all 12 categories in `formal_reflexivo`:
+9 are now `validated` (comisivo, apertura, concesivo, autoridad,
+fantasia, procedimiento, palabra, cierre) plus the 3 already validated
+in `vernaculo_negociacion`. `revision` and `neutro` carry partial,
+honestly-modest evidence documented in earlier releases; `sintoma`
+remains the one category without enough real-world evidence to move
+past `constructed`.
+
+174/174 tests passing (5 new, 1 updated to reflect the promotion). No
+regression on benchmark, adversarial suite, or any real corpus.
+
 ## 0.29.0 — 2026-07-28
 
 ### Fixed: consecuencia's "subject to" false positive. Added: palabra validated

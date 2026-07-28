@@ -860,6 +860,27 @@ están pensados para coincidir con un compromiso, no competir con él.
 dos instancias reales únicas detrás de los diez hits — cero en la
 muestra de 800 filas committeada. Demasiado poco para promover.
 
+### v0.30.0: `cierre` validada — nueve de doce categorías cubiertas, `sintoma` queda honestamente abierta
+
+**`cierre`**: el lexicón que ya teníamos (sobre todo "final answer",
+nunca probado contra datos reales) encontró **42 hits reales por sí
+solo** en DeliData, sin agregar nada. Se sumó `"final decision"`
+—evidenciado sin ambigüedad: el propio botón de la plataforma dice
+literalmente "Final Decision and Submit"— y el número subió a **147
+hits, 115 de 500 diálogos**, precisión chequeada en 17/17 sobre una
+muestra pareja. Promovida a `validated`.
+
+**`sintoma`**: revisada contra los tres corpus reales que tenemos
+(CaSiNo, DeliData, QAEvasion). Resultado: solo **8 instancias
+genuinas en total**. Reales, pero muy por debajo de cualquier otra
+categoría que promovimos. No se fuerza — queda `constructed`, con esta
+evidencia nueva documentada en vez de escondida.
+
+Con esto, **9 de 12 categorías** de `formal_reflexivo` (más las 3 de
+`vernaculo_negociacion`) tienen evidencia real detrás. Quedan
+`revision`, `neutro` (ambas con evidencia parcial ya documentada) y
+`sintoma`.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

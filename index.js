@@ -349,7 +349,14 @@ const REGISTROS = {
     // get an American soldier back... Full stop."). Small sample (n=2
     // unique), added anyway since both were clean and this category had
     // zero real evidence before.
-    cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer|full stop)\b/gi,
+    // Extended v0.30.0: "final decision" added, evidenced from DeliData
+    // (the platform's actual submission button is literally "Final
+    // Decision and Submit", making this an unambiguous closure phrase
+    // in that corpus — checked, no risk of the "subject to" kind of
+    // polysemy). The EXISTING lexicon (mainly "final answer", never
+    // tested against real data before) already found 42 real hits
+    // across 35/500 dialogues on its own.
+    cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer|full stop|final decision)\b/gi,
     // "actually" removed as a bare trigger (v0.15.0): tested against 1030
     // real CaSiNo negotiation dialogues and found 98% of hits (105 of 107)
     // were the intensifier sense ("I actually need 2 packages" = "in fact",
@@ -543,9 +550,18 @@ const REGISTRO_EVIDENCE = {
       'comisivo\'s own "i promise" trigger, since the Otro-axis markers are meant to co-occur with ' +
       'a commitment, not compete with it. cierre gained "full stop" (evidenced, 2/2 genuine in ' +
       'context) but stays constructed — only 2 unique real instances behind it, confirmed too thin ' +
-      'by zero hits in the committed 800-row sample.',
-    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia', 'procedimiento', 'palabra'],
-    constructed: ['cierre','revision','neutro','sintoma','consecuencia'],
+      'by zero hits in the committed 800-row sample. cierre validated (v0.30.0) against DeliData: ' +
+      'the EXISTING lexicon (mainly "final answer", never tested before) already found 42 real ' +
+      'hits across 35/500 dialogues on its own. Added "final decision" (evidenced — the platform\'s ' +
+      'actual submission button is literally "Final Decision and Submit", unambiguous, no "subject ' +
+      'to"-style polysemy risk). Result: 147 hits, 115/500 dialogues, precision spot-checked at ' +
+      '17/17 on an evenly-sampled subset. Promoted to validated. sintoma checked across all three ' +
+      'real corpora in hand (CaSiNo, DeliData, QAEvasion) and found only 8 total genuine instances ' +
+      '— real, but too thin to promote, unlike cierre. Not chased into validated status the way ' +
+      'others were with substantial evidence; this completes the review of all 12 categories in ' +
+      'this register, leaving sintoma as the one still without enough real-world evidence.',
+    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia', 'procedimiento', 'palabra', 'cierre'],
+    constructed: ['revision','neutro','sintoma','consecuencia'],
   },
   vernaculo_negociacion: {
     corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues; ' +

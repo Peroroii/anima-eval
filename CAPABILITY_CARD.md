@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.29.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 170/170
+**Versión:** 0.30.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 174/174
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,17 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — `cierre` validada, `sintoma` sigue abierta con honestidad
+
+El lexicón existente de `cierre` ("final answer", nunca antes probado)
+encontró 42 hits reales por sí solo en DeliData. Se sumó "final
+decision" (evidenciado, sin ambigüedad) y subió a 147 hits, 115/500
+diálogos, precisión 17/17. Promovida a `validated`. `sintoma` se
+revisó contra los tres corpus reales en mano y encontró solo 8
+instancias totales — real, pero demasiado poco para promover, no
+forzada. 9 de 12 categorías de `formal_reflexivo` (+3 de
+`vernaculo_negociacion`) tienen ahora evidencia real.
 
 ## Fase 2, continuación — `palabra` validada, bug en `consecuencia` corregido
 

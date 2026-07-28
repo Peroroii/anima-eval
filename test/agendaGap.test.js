@@ -1477,8 +1477,9 @@ describe('consecuencia/palabra/cierre refined via QAEvasion (v0.29.0)', () => {
     expect(r.registro_evidence.formal_reflexivo.validated).toContain('palabra');
   });
 
-  test('cierre stays constructed despite "full stop" being added -- only 2 unique real instances ' +
-       'behind it, too thin to promote (0 hits in the committed 800-row sample)', () => {
+  test('cierre was NOT promoted on QAEvasion evidence alone -- only 2 unique real instances of ' +
+       '"full stop" behind it there (0 hits in the committed 800-row sample); it was DeliData ' +
+       '(checked separately, v0.30.0) that provided the substantial evidence for promotion', () => {
     const dir = path.join(__dirname, 'fixtures_qevasion');
     const data = JSON.parse(fs.readFileSync(path.join(dir, 'qevasion_sample.json')));
     let total = 0;
@@ -1487,8 +1488,48 @@ describe('consecuencia/palabra/cierre refined via QAEvasion (v0.29.0)', () => {
       total += r.registro_coverage.formal_reflexivo.cierre || 0;
     }
     expect(total).toBe(0);
-    const r2 = auditTranscript({ turns: [{ speaker:'agent', text:'hola' }]});
-    expect(r2.registro_evidence.formal_reflexivo.constructed).toContain('cierre');
+  });
+});
+
+describe('cierre validated via DeliData (v0.30.0) — sintoma stays thin evidence, not forced', () => {
+  test('"final decision" and the pre-existing "final answer" both fire as cierre', () => {
+    const r1 = auditTranscript({ turns: [{ speaker:'agent', text: 'Final decision: A and 7.' }]});
+    let fires1 = false;
+    for (const reg of Object.values(r1.registro_coverage)) if ((reg.cierre||0)>0) fires1 = true;
+    expect(fires1).toBe(true);
+
+    const r2 = auditTranscript({ turns: [{ speaker:'agent', text: "That's my final answer." }]});
+    let fires2 = false;
+    for (const reg of Object.values(r2.registro_coverage)) if ((reg.cierre||0)>0) fires2 = true;
+    expect(fires2).toBe(true);
+  });
+
+  test('cierre is now validated in the evidence ledger', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'Final decision made.' }]});
+    expect(r.registro_evidence.formal_reflexivo.validated).toContain('cierre');
+  });
+
+  test('real-data check (50-dialogue DeliData sample): cierre fires the pinned number of times', () => {
+    const dir = path.join(__dirname, 'fixtures_delidata');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'delidata_sample.json')));
+    let total = 0, withHit = 0;
+    for (const d of data){
+      const both = { turns: d.turns.map(t => ({ speaker: 'agent', text: t.text })) };
+      const r = auditTranscript(both);
+      const n = r.registro_coverage.formal_reflexivo.cierre || 0;
+      if (n > 0) withHit++;
+      total += n;
+    }
+    expect(total).toBe(10);
+    expect(withHit).toBe(7);
+  });
+
+  test('sintoma stays constructed -- checked across all three real corpora (CaSiNo, DeliData, ' +
+       'QAEvasion) and found only 8 total instances, too thin to promote despite being genuine, ' +
+       'not chased into validated status the way cierre and others were with substantial evidence', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'hola' }]});
+    expect(r.registro_evidence.formal_reflexivo.constructed).toContain('sintoma');
+    expect(r.registro_evidence.formal_reflexivo.validated).not.toContain('sintoma');
   });
 });
 
