@@ -535,6 +535,25 @@ comillas dobles rectas vs. tipográficas) a partir de frases reales, y
 confirma que el resultado no cambia — la clase completa de bug que ya
 costó una sesión entera de investigación (v0.14.0), blindada de una vez.
 
+### Tarjeta de capacidad (`CAPABILITY_CARD.md`) — segundo ítem de la fase 1
+
+Un documento de una sola lectura, pensado para quien tiene que decidir
+si integrar esta señal sin leer el código: qué detecta, el estado de
+evidencia exacto de cada categoría (con la distinción entre spot-check
+manual y benchmark formal mantenida explícita, no diluida), los números
+reales de precisión/recall, y — con el mismo peso que las capacidades —
+los géneros con cobertura conocida como ausente. Cierra con una postura
+de despliegue explícita: señal de monitoreo para ensamble, nunca gate
+de bloqueo único.
+
+Escribir esta tarjeta encontró, de paso, un bug real: `anima_eval_version`
+llevaba **seis releases** reportando `0.10.0` como texto literal
+mientras `package.json` ya estaba en `0.16.0` — nadie lo había notado
+porque nada lo comparaba contra la fuente de verdad. Corregido leyendo
+la versión directamente de `package.json`, y blindado con dos tests: uno
+para el campo en el código, otro para que la propia tarjeta de
+capacidad no pueda quedar desactualizada sin que un test lo note.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

@@ -8,6 +8,13 @@
 // motivated each change below.
 // ═══════════════════════════════════════════════════════════════════════
 'use strict';
+// Read the version from package.json rather than a hardcoded literal --
+// found necessary while writing the capability card (v0.16.0 work):
+// anima_eval_version below had been a literal string since v0.10.0 and
+// silently drifted six releases behind package.json, unnoticed because
+// nothing ever checked it against the source of truth. A capability card
+// that cites the wrong version undermines the exact thing it exists for.
+const { version: PACKAGE_VERSION } = require('./package.json');
 
 // ── Linguistic layer (LIWC + Rioplatense/ES + EN deixis) ──
 const DIC = {
@@ -1009,7 +1016,7 @@ function auditTranscript(transcript, opts = {}){
   };
 
   return {
-    anima_eval_version: '0.10.0',
+    anima_eval_version: PACKAGE_VERSION,
     turns_audited: agentTurns.length,
     structural_signature: struct.signature,
     dominant_structure: struct.dominant,

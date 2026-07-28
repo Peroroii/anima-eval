@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.17.0 — 2026-07-27
+
+### Added: CAPABILITY_CARD.md — second item of the Fase 1 deployment hygiene roadmap
+
+A single-read document for anyone deciding whether to integrate this
+signal without reading the code: what it detects, the exact evidence
+status of every category (spot-check vs. formal benchmark kept
+explicitly distinct, never blurred), real precision/recall numbers, and
+— given equal weight to capabilities — genres with known-absent
+coverage. Closes with an explicit deployment posture: monitoring signal
+for ensemble use, never a standalone blocking gate.
+
+**Writing it surfaced a real bug**: `anima_eval_version` had been a
+hardcoded string literal reporting `0.10.0` for six releases while
+`package.json` was already at `0.16.0` — nothing had ever compared it
+against the source of truth. Fixed by reading the version from
+`package.json` directly, and guarded with two tests: one for the field
+in code, one confirming the capability card itself states the current
+version (which caught, live, that bumping to 0.17.0 while writing this
+entry made the card's own stated version stale — fixed in the same
+commit, exactly the failure mode the guard exists to catch).
+
+135/135 tests passing (2 new).
+
 ## 0.16.0 — 2026-07-27
 
 ### Added: deployment hygiene guards (Fase 1 of the AI-safety architecture roadmap)

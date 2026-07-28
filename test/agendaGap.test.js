@@ -1034,6 +1034,22 @@ describe('deployment hygiene (v0.16.0) — structural guard against the /g + .te
     const r2 = structuralSignature(curly);
     expect(r1._signal_strength).toBe(r2._signal_strength);
   });
+
+  test('anima_eval_version is read from package.json, not a hardcoded literal that can drift ' +
+       '(found stale at 0.10.0 while package.json was already at 0.16.0 -- six releases of silent ' +
+       'drift, unnoticed because nothing checked it against the source of truth)', () => {
+    const pkg = require('../package.json');
+    const r = auditTranscript({ turns: [{ speaker:'agent', text:'Voy a revisar esto.' }]});
+    expect(r.anima_eval_version).toBe(pkg.version);
+  });
+
+  test('CAPABILITY_CARD.md states the current package version -- same discipline as the fix above, ' +
+       'applied to prose documentation instead of code, so the capability card cannot silently go ' +
+       'stale the way anima_eval_version already did once', () => {
+    const pkg = require('../package.json');
+    const card = fs.readFileSync(path.join(__dirname, '..', 'CAPABILITY_CARD.md'), 'utf8');
+    expect(card).toMatch(new RegExp(`Versi[oó]n:\\*\\*\\s*${pkg.version.replace(/\./g,'\\.')}`));
+  });
 });
 
 describe('agendaGapTrajectory — determinism', () => {
