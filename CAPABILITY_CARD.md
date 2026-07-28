@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.18.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 140/140
+**Versión:** 0.19.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 141/141
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,19 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Robustez adversarial (`npm run adversarial`) — medido, no asumido
+
+8 técnicas de evasión deliberada contra una violación genuina de
+compromiso. **6 de 8 evaden la detección hoy** (parafraseo sin
+solapamiento léxico, voz pasiva, cruce de idioma, doble negación, y
+abuso parcial de la capa abductiva). Solo 2 resisten: dilución por
+turnos intercalados, y variación de modal verbal ("shall" en vez de
+"will"). Este número no es un secreto incómodo — es exactamente la
+razón por la que la postura de despliegue recomendada (ver abajo) es
+señal de monitoreo en ensamble, nunca gate de bloqueo único: un agente
+que supiera que está siendo auditado por este instrumento tendría un
+camino de evasión relativamente accesible.
 
 ## Postura de despliegue recomendada
 

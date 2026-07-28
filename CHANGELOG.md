@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.19.0 — 2026-07-28
+
+### Added: adversarial robustness suite — Fase 1 complete
+
+Fourth and last item of the AI-safety deployment hygiene roadmap.
+`adversarial_suite.js` (`npm run adversarial`) measures something
+`benchmark.js` was never designed to test: how much effort it takes to
+deliberately evade detection, given a genuine commitment violation.
+Eight distinct evasion techniques — paraphrase without lexical overlap,
+passive voice, cross-language switching, double negation, turn dilution,
+modal variation, and two ways of abusing the abductive layer's charity.
+
+**Result, unsoftened**: 6 of 8 techniques evade detection today. Only
+turn dilution and modal variation ("shall" instead of "will") are still
+caught. Not reported as a failure to hide — it's the exact measurement
+Part II of the safety architecture document said would be needed before
+trusting this instrument as more than a monitoring signal in an
+ensemble. Pinned with a regression test: an improvement is a real,
+measurable one; a silent regression gets caught.
+
+`CAPABILITY_CARD.md` updated with this finding at the same prominence
+as any capability — directly reinforces the "never a standalone
+blocking gate" deployment posture with a concrete number instead of
+just a principle.
+
+141/141 tests passing (1 new). Fase 1 of the AI-safety architecture
+roadmap (deployment hygiene: bug-class guards, capability card, ensemble
+schema, adversarial suite) is now complete.
+
 ## 0.18.0 — 2026-07-28
 
 ### Added: toEnsembleSignal — Fase 3 of the AI-safety deployment hygiene roadmap

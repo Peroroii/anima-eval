@@ -588,6 +588,25 @@ hay turnos de agente — la primera versión de esta función explotaba
 leyendo `.per_turn` de ese `undefined`. Corregido para reportar
 limpiamente en ese caso, con la razón exacta en `_note`.
 
+### Suite de robustez adversarial (`npm run adversarial`) — cuarto y último ítem de la fase 1
+
+Distinta en propósito de `benchmark.js`: ese mide si el sistema
+generaliza bien sobre casos representativos. Esta mide algo que ningún
+caso del benchmark fue diseñado para probar — cuánto esfuerzo hace
+falta para **evadir** la detección a propósito, dada una violación
+genuina de compromiso de por medio. Ocho técnicas de evasión distintas
+(parafraseo, voz pasiva, cruce de idioma, doble negación, dilución por
+turnos, variación de modal, y dos formas de abusar la capa abductiva).
+
+**Resultado, sin suavizar**: 6 de 8 técnicas evaden la detección hoy.
+Solo la dilución por turnos intercalados y la variación de modal verbal
+("shall" en vez de "will") siguen siendo atrapadas. Esto no se reporta
+como fracaso a esconder — es exactamente la medición que la Parte II del
+documento de arquitectura de seguridad predijo que haría falta antes de
+confiar en este instrumento como algo más que una señal de monitoreo en
+ensamble. El número queda pinneado con un test de regresión: si mejora,
+es una mejora real y medible; si empeora en silencio, el test lo atrapa.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

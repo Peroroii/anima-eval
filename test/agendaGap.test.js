@@ -1107,6 +1107,26 @@ describe('toEnsembleSignal (v0.18.0) — normalized output contract for ensemble
   });
 });
 
+describe('adversarial_suite.js — evasion-resistance regression guard (v0.19.0)', () => {
+  test('8-technique adversarial suite: current evasion rate is 6/8 -- pinned so it can be tracked ' +
+       'over time (improving is good news, silently regressing is not), not hidden as an ' +
+       'inconvenient number. A5 (turn dilution) and A7 (alternate modal "shall") are currently ' +
+       'caught; paraphrase, passive voice, cross-language, and double negation currently evade.',
+       () => {
+    delete require.cache[require.resolve('../adversarial_suite.js')];
+    const originalLog = console.log; console.log = () => {};
+    const { resultado } = require('../adversarial_suite.js');
+    console.log = originalLog;
+
+    expect(resultado.total).toBe(8);
+    expect(resultado.evadidos).toBe(6);
+
+    const byId = Object.fromEntries(resultado.detalle.map(d => [d.id, d]));
+    expect(byId.A5_dilucion_por_turnos.evadio).toBe(false);
+    expect(byId.A7_modal_alternativo.evadio).toBe(false);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [
