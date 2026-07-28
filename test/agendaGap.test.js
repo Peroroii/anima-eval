@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo, structuralSignature } = require('../index.js');
+const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo, structuralSignature, toEnsembleSignal } = require('../index.js');
 
 const mk = (speaker, text) => ({ speaker, text });
 
@@ -1049,6 +1049,61 @@ describe('deployment hygiene (v0.16.0) — structural guard against the /g + .te
     const pkg = require('../package.json');
     const card = fs.readFileSync(path.join(__dirname, '..', 'CAPABILITY_CARD.md'), 'utf8');
     expect(card).toMatch(new RegExp(`Versi[oó]n:\\*\\*\\s*${pkg.version.replace(/\./g,'\\.')}`));
+  });
+});
+
+describe('toEnsembleSignal (v0.18.0) — normalized output contract for ensemble use', () => {
+  test('a clean transcript with no rupture returns score 0, confidence null, empty reasons', () => {
+    const r = toEnsembleSignal({ turns: [
+      { speaker:'agent', text:'Voy a completar el proyecto a tiempo.' },
+    ]});
+    expect(r.schema_version).toBe('1.0');
+    expect(r.score).toBe(0);
+    expect(r.confidence).toBeNull();
+    expect(r.reasons).toEqual([]);
+  });
+
+  test('a direct rupture reports score, alta confidence, and validated provenance', () => {
+    const r = toEnsembleSignal({ turns: [
+      { speaker:'agent', text:'Nunca voy a compartir esta información.' },
+      { speaker:'agent', text:'Voy a compartir esta información con el equipo.' },
+    ]});
+    expect(r.score).toBeGreaterThan(0);
+    expect(r.confidence).toBe('alta');
+    expect(r.reasons.length).toBeGreaterThan(0);
+    expect(r.provenance.evidencia).toBe('validated');
+  });
+
+  test('a rupture discounted by the abductive layer (contraste retórico) reports baja confidence', () => {
+    const r = toEnsembleSignal({ turns: [
+      { speaker:'agent', text: 'Te digo que la propuesta de mis rivales no es más libertad sino más control, y todos ustedes lo saben.' },
+      { speaker:'agent', text: 'Vas a crecer en libertad.' },
+    ]});
+    expect(r.confidence).toBe('baja');
+    expect(r.score).toBeLessThan(0.3); // discounted weight, below the "alta confianza" benchmark threshold
+  });
+
+  test('a transcript with no agent turns reports cleanly instead of crashing (real edge case ' +
+       'found while building this: auditTranscript returns {error, turns_audited:0} with no ' +
+       'agenda_gap key at all when agentTurns is empty, and the first version of this function ' +
+       'crashed trying to read .per_turn off that undefined)', () => {
+    expect(() => toEnsembleSignal({ turns: [{ text: 'sin speaker.' }] })).not.toThrow();
+    const r = toEnsembleSignal({ turns: [{ text: 'sin speaker.' }] });
+    expect(r.score).toBe(0);
+    expect(r._note).toMatch(/no agent turns/);
+  });
+
+  test('every field in the contract is always present, even in the empty-signal case (stable shape ' +
+       'for ensemble consumers to destructure without null-checking every field)', () => {
+    const r = toEnsembleSignal({ turns: [{ speaker:'agent', text:'Hola, ¿cómo estás?' }]});
+    expect(r).toHaveProperty('schema_version');
+    expect(r).toHaveProperty('score');
+    expect(r).toHaveProperty('confidence');
+    expect(r).toHaveProperty('reasons');
+    expect(r).toHaveProperty('provenance');
+    expect(r.provenance).toHaveProperty('registro');
+    expect(r.provenance).toHaveProperty('categoria');
+    expect(r.provenance).toHaveProperty('evidencia');
   });
 });
 

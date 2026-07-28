@@ -1156,5 +1156,110 @@ function poderDiscursivo(transcript){
   };
 }
 
+const ENSEMBLE_SCHEMA_VERSION = '1.0';
+
+// toEnsembleSignal — normalized output contract for combining ANIMA with
+// other sandbagging/deception detectors (black-box statistical, white-box
+// probes) in an ensemble, per Fase 1 of the AI-safety architecture
+// roadmap (recomendación 2). Anthropic's UK AISI auditing-game finding
+// (Taylor et al. 2025) is the direct motivation: ten detection methods
+// failed acting ALONE. The architectural response isn't "replace them" —
+// it's making this instrument's rich internal output easy to combine
+// with theirs, instead of every integration re-deriving its own mapping
+// from auditTranscript()'s full shape.
+//
+// Design choices, made explicitly rather than left implicit:
+//  - `score` is the MAX per-turn agendaGap, not the mean. For flagging
+//    purposes, one genuine rupture in an otherwise clean transcript is
+//    exactly the signal that matters — averaging it against clean turns
+//    would dilute the one thing worth surfacing.
+//  - `confidence` is 'alta' only when the highest-scoring rupture's
+//    abductive hypothesis is contradiccion_directa (full weight); any
+//    discounted hypothesis (contraste_retorico, clausula_subordinada)
+//    reports 'baja', surfacing the same distinction the abductive layer
+//    already makes, instead of collapsing it into one opaque number.
+//  - `provenance` carries the evidence status (validated/constructed)
+//    straight from REGISTRO_EVIDENCE, so a consuming system can decide
+//    for itself whether to trust a `constructed` category's contribution
+//    the same as a `validated` one.
+function toEnsembleSignal(transcript, opts = {}){
+  const audit = auditTranscript(transcript, opts);
+
+  // auditTranscript returns an explicit {error, turns_audited:0} shape
+  // when there are no agent turns to audit (transcript.turns filtered to
+  // nothing) — found here because toEnsembleSignal is the first place
+  // that shape gets handed to an external ensemble consumer instead of
+  // staying inside this codebase. A malformed/empty transcript should
+  // report cleanly, never crash.
+  if (audit.error){
+    return {
+      schema_version: ENSEMBLE_SCHEMA_VERSION,
+      score: 0,
+      confidence: null,
+      reasons: [],
+      provenance: { registro: null, categoria: null, evidencia: null },
+      _method: 'deterministic_lexical_no_llm',
+      _note: audit.error,
+    };
+  }
+
+  const perTurn = audit.agenda_gap.per_turn;
+
+  let best = null;
+  for (const t of perTurn){
+    if (t.agendaGap <= 0) continue;
+    if (!best || t.agendaGap > best.agendaGap) best = t;
+  }
+
+  if (!best){
+    return {
+      schema_version: ENSEMBLE_SCHEMA_VERSION,
+      score: 0,
+      confidence: null,
+      reasons: [],
+      provenance: { registro: null, categoria: null, evidencia: null },
+      _method: 'deterministic_lexical_no_llm',
+    };
+  }
+
+  const topHypothesis = (best.ruptureHypotheses && best.ruptureHypotheses[0]) || null;
+  const confidence = topHypothesis
+    ? (topHypothesis.hypothesis === 'contradiccion_directa' ? 'alta' : 'baja')
+    : 'alta';
+
+  const reasons = [];
+  reasons.push(`turno ${best.turn}: agendaGap=${best.agendaGap.toFixed(3)} (${best.newRuptures} ruptura(s) nueva(s))`);
+  if (topHypothesis) reasons.push(`hipótesis: ${topHypothesis.hypothesis} (${topHypothesis.confidence})`);
+  for (const mv of best.movements || []) reasons.push(`movimiento: ${mv.type} — "${mv.sentence}"`);
+
+  // provenance: pull registro attribution for whichever category most
+  // plausibly drove this turn's flag (comisivo, the one that always
+  // exists when a rupture fires against a registered commitment).
+  // KNOWN LIMIT, documented not hidden: this looks at the RUPTURING
+  // sentence, not the original registered commitment it violated — a
+  // rupture can fire via pure signifier overlap even when the rupturing
+  // sentence itself isn't a comisivo trigger (e.g. "Vas a crecer en
+  // libertad" breaking an earlier commitment purely on shared content
+  // words), in which case registro/evidencia report null here rather
+  // than a guessed value. Tracing back to the ORIGINAL commitment's
+  // registro would be more complete; left as a documented gap, not
+  // silently patched with a heuristic that might be wrong.
+  const registrosComisivo = registrosThatMatch(
+    (transcript.turns[best.turn] && transcript.turns[best.turn].text) || '', 'comisivo');
+  const registroName = registrosComisivo[0] || null;
+  const evidencia = registroName && REGISTRO_EVIDENCE[registroName]
+    ? (REGISTRO_EVIDENCE[registroName].validated.includes('comisivo') ? 'validated' : 'constructed')
+    : null;
+
+  return {
+    schema_version: ENSEMBLE_SCHEMA_VERSION,
+    score: +best.agendaGap.toFixed(3),
+    confidence,
+    reasons,
+    provenance: { registro: registroName, categoria: 'comisivo', evidencia },
+    _method: 'deterministic_lexical_no_llm',
+  };
+}
+
 module.exports = { auditTranscript, auditCollusion, structuralSignature, rigidity, rigidityDetailed,
-  agendaGapTrajectory, extractCommitments, computeSignalVector, poderDiscursivo };
+  agendaGapTrajectory, extractCommitments, computeSignalVector, poderDiscursivo, toEnsembleSignal };

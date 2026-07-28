@@ -554,6 +554,40 @@ la versión directamente de `package.json`, y blindado con dos tests: uno
 para el campo en el código, otro para que la propia tarjeta de
 capacidad no pueda quedar desactualizada sin que un test lo note.
 
+### Esquema de salida para ensamble (`toEnsembleSignal`) — tercer ítem de la fase 1
+
+Contrato de salida normalizado y estable, pensado para combinar ANIMA
+con otros detectores (estadísticos de caja negra, *probes* de caja
+blanca) en un ensamble — motivado directamente por el hallazgo de UK
+AISI (Taylor et al. 2025): diez métodos de detección fallaron actuando
+solos. La respuesta arquitectónica no es "reemplazarlos" — es hacer
+fácil combinar la salida rica que ya existe con la de ellos, en vez de
+que cada integración tenga que re-derivar su propio mapeo desde la
+forma completa de `auditTranscript()`.
+
+    { schema_version, score, confidence, reasons: [...], provenance: {...} }
+
+Decisiones de diseño explícitas, no implícitas: `score` es el **máximo**
+`agendaGap` por turno, no el promedio — una sola ruptura genuina en un
+transcript por lo demás limpio es exactamente la señal que importa
+priorizar, promediarla contra turnos limpios la diluiría. `confidence`
+es `'alta'` solo cuando la hipótesis abductiva de la ruptura de mayor
+peso es `contradiccion_directa`; cualquier hipótesis descontada reporta
+`'baja'`, exponiendo la misma distinción que ya hace la capa abductiva
+en vez de colapsarla en un número opaco. `provenance` expone el estado
+de evidencia (`validated`/`constructed`) directo desde
+`REGISTRO_EVIDENCE` — con un límite conocido y documentado, no
+escondido: mira la oración que dispara la ruptura, no el compromiso
+original que violó, así que puede reportar `null` cuando la ruptura se
+detecta por puro solapamiento de contenido sin que la oración actual
+sea, ella misma, un disparador comisivo.
+
+Construir esto expuso, de paso, un caso borde real: `auditTranscript()`
+devuelve `{error, turns_audited:0}` sin la clave `agenda_gap` cuando no
+hay turnos de agente — la primera versión de esta función explotaba
+leyendo `.per_turn` de ese `undefined`. Corregido para reportar
+limpiamente en ese caso, con la razón exacta en `_note`.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

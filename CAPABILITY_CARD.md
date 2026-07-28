@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.17.0 · **Última corrida de regresión completa:** 2026-07-27 · **Tests:** 135/135
+**Versión:** 0.18.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 140/140
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -14,6 +14,10 @@ Un instrumento de auditoría de texto **determinístico, léxico, sin
 LLM**: dado un transcript, reporta compromisos discursivos, rupturas no
 reconocidas, y una serie de señales estructurales — todo trazable a la
 oración exacta y a la regla exacta que disparó cada resultado.
+`toEnsembleSignal()` expone esto en un contrato normalizado y estable
+(`schema_version`, `score`, `confidence`, `reasons`, `provenance`),
+pensado específicamente para combinarse con otros detectores en un
+ensamble, no para usarse aislado.
 
 ## Qué NO es
 

@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.18.0 — 2026-07-28
+
+### Added: toEnsembleSignal — Fase 3 of the AI-safety deployment hygiene roadmap
+
+A normalized, stable output contract for combining ANIMA with other
+sandbagging/deception detectors (black-box statistical, white-box
+probes) in an ensemble — direct response to UK AISI's auditing-game
+finding (Taylor et al. 2025) that ten detection methods failed acting
+alone.
+
+    { schema_version, score, confidence, reasons: [...], provenance: {...} }
+
+Explicit design choices: `score` is the MAX per-turn `agendaGap`, not the
+mean (one genuine rupture in an otherwise clean transcript is exactly
+the signal worth surfacing, not diluting). `confidence` is `'alta'` only
+when the top rupture's abductive hypothesis is `contradiccion_directa`;
+any discounted hypothesis reports `'baja'`. `provenance` exposes
+validated/constructed evidence status straight from `REGISTRO_EVIDENCE`
+— with a documented limit, not a hidden one: it looks at the rupturing
+sentence, not the original violated commitment, and can report `null`
+when a rupture fires on pure content-word overlap without the current
+sentence itself being a comisivo trigger.
+
+**Building it surfaced a real edge case**: `auditTranscript()` returns
+`{error, turns_audited:0}` with no `agenda_gap` key at all when there are
+no agent turns — the first version of this function crashed reading
+`.per_turn` off that `undefined`. Fixed to report cleanly in that case,
+with the exact reason in `_note`.
+
+140/140 tests passing (5 new). No regression on benchmark or any real
+corpus.
+
 ## 0.17.0 — 2026-07-27
 
 ### Added: CAPABILITY_CARD.md — second item of the Fase 1 deployment hygiene roadmap
