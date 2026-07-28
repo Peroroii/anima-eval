@@ -838,6 +838,28 @@ hits genuinos en el corpus completo. Se leyó el contexto completo de 8
 de los 15 ("officially or formally nominated", "in accordance with
 international law"): los 8, genuinos. Promovida a `validated`.
 
+### v0.29.0: `palabra` validada, un bug encontrado en `consecuencia`, `cierre` sigue flaca
+
+Mismo corpus (QAEvasion), tres categorías más revisadas.
+
+**`consecuencia` tenía un bug real**: `"subject to"` daba 26/26 falsos
+positivos — en el lenguaje político real casi siempre significa
+"sujeto a cambio/revisión" ("subject to fresh eyes"), no "sujeto a
+sanción". Los otros cinco disparadores no encontraron nada en este
+corpus, así que sacarlo no cuesta señal real, solo saca ruido. Los 5
+hits genuinos de SnitchBench siguen intactos.
+
+**`palabra` se validó**: `"i promise you"`, `"i guarantee you"`, `"i
+assure you"` — 26 hits, contexto completo chequeado en 8/8, todos
+genuinos empeños de palabra. Distinto de pero compatible con el
+`"i promise"` que ya tiene `comisivo` — los marcadores del eje Otro
+están pensados para coincidir con un compromiso, no competir con él.
+
+**`cierre` sigue sin validar, con honestidad sobre por qué**: se agregó
+`"full stop"`, evidenciado y genuino (2/2 en contexto), pero son solo
+dos instancias reales únicas detrás de los diez hits — cero en la
+muestra de 800 filas committeada. Demasiado poco para promover.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

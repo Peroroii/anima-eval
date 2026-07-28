@@ -344,7 +344,12 @@ const REGISTROS = {
   // particular starting point (Bourdieu: it's the authors' own market).
   formal_reflexivo: {
     comisivo: /\b(prometo|garantizo|me comprometo|te aseguro|aseguro|nunca voy a|siempre voy a|no voy a|voy a|vamos a|i promise|i will|i'll|i guarantee|i'll never|i'll always|i assure you)\b/gi,
-    cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer)\b/gi,
+    // "full stop" added (v0.29.0), evidenced from QAEvasion: 2 genuine
+    // instances checked in full context ("wrong. Full stop.", "we still
+    // get an American soldier back... Full stop."). Small sample (n=2
+    // unique), added anyway since both were clean and this category had
+    // zero real evidence before.
+    cierre: /\b(se acabó|no hay más que hablar|está decidido|punto final|no hay más discusión|that's final|end of discussion|case closed|non-negotiable|not up for debate|that settles it|final answer|full stop)\b/gi,
     // "actually" removed as a bare trigger (v0.15.0): tested against 1030
     // real CaSiNo negotiation dialogues and found 98% of hits (105 of 107)
     // were the intensifier sense ("I actually need 2 packages" = "in fact",
@@ -408,8 +413,26 @@ const REGISTROS = {
     // without enough independent evidence to name one.
     autoridad: /\b(mi supervisor|mi jefe|el responsable|la autoridad competente|el director|la gerencia|el regulador|la junta|el tribunal|la comisión|FDA|SEC|DOJ|Department of Justice|my supervisor|my boss|the board|the regulator|the authority|the court)\b/gi,
     procedimiento: /\b(según el procedimiento|conforme a|de acuerdo con el protocolo|formalmente|oficialmente|por escrito|mediante el canal correspondiente|según lo establecido|through the proper channel|in accordance with|per protocol|formally|officially|through official channels)\b/gi,
-    consecuencia: /\b(de lo contrario|en caso de incumplimiento|bajo pena de|podrá resultar en|sujeto a sanción|puede tener consecuencias|will result in|subject to|failure to comply|under penalty of|disciplinary action|legal action)\b/gi,
-    palabra: /\b(te juro|juro que|te doy mi palabra|bajo juramento|por mi honor|i swear|i give you my word|on my honor|under oath|you have my word)\b/gi,
+    // "subject to" removed (v0.29.0): tested against QAEvasion (3,448
+    // real political QA pairs) and found 26/26 hits (100%) were the
+    // "liable to/dependent on" sense ("subject to change", "subject to
+    // fresh eyes", "subject to fraud") — NOT the stated-consequence
+    // sense this category means ("subject to disciplinary action").
+    // Too polysemous a phrase on its own; the other five triggers found
+    // zero hits in this corpus, so removing this one doesn't cost real
+    // signal here, only removes noise. Same discipline as removing
+    // "actually" from revision (v0.15.0) and retiring showing-empathy
+    // from concesivo (v0.24.0).
+    consecuencia: /\b(de lo contrario|en caso de incumplimiento|bajo pena de|podrá resultar en|sujeto a sanción|puede tener consecuencias|will result in|failure to comply|under penalty of|disciplinary action|legal action)\b/gi,
+    // Extended v0.29.0 with three markers evidenced from QAEvasion: "i
+    // promise you"/"i guarantee you"/"i assure you" checked in full
+    // context (8/8 genuine performative word-pledges, e.g. "I promise
+    // you, we'll be able to do it"). Distinct from comisivo's "i
+    // promise" (a commitment to an action) -- this is the performative
+    // act of invoking one's word as bond, which can co-occur with a
+    // comisivo match on the same sentence without conflict, consistent
+    // with how the Otro-axis markers are meant to work.
+    palabra: /\b(te juro|juro que|te doy mi palabra|bajo juramento|por mi honor|i swear|i give you my word|on my honor|under oath|you have my word|i promise you|i guarantee you|i assure you)\b/gi,
   },
   // Vernacular negotiation register — extracted directly from the
   // DealOrNoDeal real conversational corpus (test/fixtures_conversational)
@@ -509,9 +532,20 @@ const REGISTRO_EVIDENCE = {
       'modest, stays constructed. procedimiento needed NO new triggers — its existing, never-' +
       'before-tested lexicon found 15 genuine hits in the full corpus; read full context for 8 of ' +
       '15, all genuine ("officially or formally nominated", "in accordance with international ' +
-      'law"). Promoted to validated on that basis.',
-    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia', 'procedimiento'],
-    constructed: ['cierre','revision','neutro','sintoma','consecuencia','palabra'],
+      'law"). Promoted to validated on that basis. consecuencia\'s "subject to" removed (v0.29.0): ' +
+      'the same QAEvasion corpus showed 26/26 hits (100%) were the "liable to/dependent on" sense ' +
+      '("subject to fresh eyes", "subject to change"), not the stated-consequence sense this ' +
+      'category means — the other five triggers found zero hits here, so removing this one costs ' +
+      'no real signal, only noise. The 5 genuine hits from SnitchBench/agentic misalignment ' +
+      '(unaffected, didn\'t use this trigger) remain too small a sample to promote. palabra ' +
+      'validated (v0.29.0): added "i promise you"/"i guarantee you"/"i assure you", checked in full ' +
+      'context (8/8 genuine performative word-pledges) — distinct from but compatible with ' +
+      'comisivo\'s own "i promise" trigger, since the Otro-axis markers are meant to co-occur with ' +
+      'a commitment, not compete with it. cierre gained "full stop" (evidenced, 2/2 genuine in ' +
+      'context) but stays constructed — only 2 unique real instances behind it, confirmed too thin ' +
+      'by zero hits in the committed 800-row sample.',
+    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia', 'procedimiento', 'palabra'],
+    constructed: ['cierre','revision','neutro','sintoma','consecuencia'],
   },
   vernaculo_negociacion: {
     corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues; ' +

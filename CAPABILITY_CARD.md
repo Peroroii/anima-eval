@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.28.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 166/166
+**Versión:** 0.29.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 170/170
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,16 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — `palabra` validada, bug en `consecuencia` corregido
+
+`"subject to"` daba 26/26 falsos positivos en `consecuencia` (sentido
+"sujeto a cambio", no "sujeto a sanción") — removido, sin costo de
+señal real. `palabra` validada: 26 hits reales ("i promise you", "i
+guarantee you", "i assure you"), 8/8 genuinos en contexto completo.
+`cierre` sigue `constructed` — "full stop" agregado pero solo 2
+instancias únicas reales detrás, demasiado poco para promover (0 en la
+muestra de 800 filas).
 
 ## Fase 2, continuación — corpus institucional real (QAEvasion): `procedimiento` validada, `neutro` mejorada
 

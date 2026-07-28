@@ -1449,6 +1449,49 @@ describe('QAEvasion corpus (v0.28.0) — neutro improved, procedimiento validate
   });
 });
 
+describe('consecuencia/palabra/cierre refined via QAEvasion (v0.29.0)', () => {
+  test('"subject to" removed from consecuencia -- found 26/26 false positive in the "liable to" ' +
+       'sense ("subject to change"), not the stated-consequence sense this category means', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'Our foreign policy should be subject to fresh eyes.' }]});
+    let fires = false;
+    for (const reg of Object.values(r.registro_coverage)) if ((reg.consecuencia||0)>0) fires = true;
+    expect(fires).toBe(false);
+  });
+
+  test('the 5 genuine consecuencia hits from SnitchBench/agentic misalignment are untouched by the fix', () => {
+    const fs2 = require('fs');
+    const { auditTranscript: at } = require('../index.js');
+    const dirs = ['fixtures', 'fixtures_conversational', 'fixtures_agentic_misalignment', 'fixtures_agentic_misalignment_v2']
+      .map(d => path.join(__dirname, d));
+    let total = 0;
+    for (const dir of dirs)
+      for (const f of fs2.readdirSync(dir).filter(f => f.endsWith('.json')))
+        total += at(JSON.parse(fs2.readFileSync(path.join(dir, f)))).registro_coverage.formal_reflexivo.consecuencia || 0;
+    expect(total).toBe(5);
+  });
+
+  test('palabra validated: "i promise you"/"i guarantee you"/"i assure you" fire, checked genuine ' +
+       'in full context (8/8) before adding, distinct from but compatible with comisivo\'s own ' +
+       '"i promise" trigger', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: "I promise you, we'll get this done." }]});
+    expect(r.registro_evidence.formal_reflexivo.validated).toContain('palabra');
+  });
+
+  test('cierre stays constructed despite "full stop" being added -- only 2 unique real instances ' +
+       'behind it, too thin to promote (0 hits in the committed 800-row sample)', () => {
+    const dir = path.join(__dirname, 'fixtures_qevasion');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'qevasion_sample.json')));
+    let total = 0;
+    for (const row of data){
+      const r = auditTranscript({ turns: [{ speaker: 'agent', text: row.text }] });
+      total += r.registro_coverage.formal_reflexivo.cierre || 0;
+    }
+    expect(total).toBe(0);
+    const r2 = auditTranscript({ turns: [{ speaker:'agent', text:'hola' }]});
+    expect(r2.registro_evidence.formal_reflexivo.constructed).toContain('cierre');
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.29.0 — 2026-07-28
+
+### Fixed: consecuencia's "subject to" false positive. Added: palabra validated
+
+Same corpus (QAEvasion), three more categories reviewed.
+
+**consecuencia had a real bug**: `"subject to"` was 26/26 false positive
+— in real political language it almost always means "liable to/subject
+to change" ("subject to fresh eyes"), not "subject to penalty". The
+other five triggers found nothing in this corpus, so removing it costs
+no real signal, only noise. The 5 genuine hits from SnitchBench remain
+untouched.
+
+**palabra validated**: `"i promise you"`, `"i guarantee you"`, `"i
+assure you"` — 26 hits, full context checked 8/8, all genuine
+word-pledges. Distinct from but compatible with comisivo's own "i
+promise" trigger — the Otro-axis markers are meant to co-occur with a
+commitment, not compete with it.
+
+**cierre stays unvalidated, honestly**: added `"full stop"`, evidenced
+and genuine (2/2 in context), but only 2 unique real instances behind
+the 10 hits — zero in the committed 800-row sample. Too thin to promote.
+
+170/170 tests passing (4 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.28.0 — 2026-07-28
 
 ### Added: real institutional corpus (QAEvasion) — procedimiento validated, neutro improved
