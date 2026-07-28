@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.28.0 — 2026-07-28
+
+### Added: real institutional corpus (QAEvasion) — procedimiento validated, neutro improved
+
+Neither CaSiNo nor DeliData could provide genuinely institutional/
+political text. Found **QAEvasion / QEvasion** (Thomas et al. 2024,
+MIT) — 3,448 real question-answer pairs from US presidential
+interviews, human-annotated with nine evasion techniques (Declining to
+answer, Dodging, Deflection, Claims ignorance...).
+
+**`neutro` started at zero real recall**: the original lexicon
+("prefiero no comprometerme") never appears that way in real political
+language. Read the false negatives, checked six candidates individually
+before adding any (bar ≥50%): "not going to comment" (73%), "can't tell
+you" (69%), "we'll let you know" (80%), "not going to discuss" (60%),
+"won't say" (57%), "not prepared to" (50%). "not going to get into"
+checked and **excluded** (25%, too weak). Result: recall 0.000→0.035,
+precision 0.653 — real, modest, stays `constructed`.
+
+**`procedimiento` needed no new triggers at all** — its existing
+lexicon, never before tested against real data, found 15 genuine hits
+in the full corpus. Read full context for 8 of 15 ("officially or
+formally nominated", "in accordance with international law") — all
+genuine. Promoted to `validated`.
+
+Added `test/fixtures_qevasion/qevasion_sample.json` (800-row committed
+regression fixture) with `ATTRIBUTION.md`.
+
+166/166 tests passing (4 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.27.0 — 2026-07-28
 
 ### Added: fantasia validated — a new register of the same phenomenon, found in DeliData

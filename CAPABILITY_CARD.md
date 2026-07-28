@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.27.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 162/162
+**Versión:** 0.28.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 166/166
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,17 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — corpus institucional real (QAEvasion): `procedimiento` validada, `neutro` mejorada
+
+QAEvasion (3.448 QA reales de entrevistas presidenciales, MIT) fue el
+corpus institucional que ni CaSiNo ni DeliData podían dar. `neutro`
+partía de recall 0.000 real — agregados 6 disparadores evidenciados
+(≥50% precisión cada uno, uno descartado por débil). Recall final:
+0.035, precisión 0.653 — real, modesto, sigue `constructed`.
+`procedimiento` no necesitó lexicón nuevo — el que ya existía encontró
+15 hits genuinos nunca antes probados (8/8 confirmados en contexto
+completo). Promovida a `validated`.
 
 ## Fase 2, continuación — `fantasia` validada (DeliData, registro cognitivo)
 

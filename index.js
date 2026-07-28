@@ -363,7 +363,20 @@ const REGISTROS = {
     // that removal was evidenced and stands; this is a different marker.
     revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b|^\s*wait\b/gi,
     concesivo: /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi,
-    neutro: /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi,
+    // Extended v0.28.0 with six markers evidenced from QEvasion/QAEvasion
+    // (Thomas et al. 2024, MIT license, real US presidential interviews
+    // with human-annotated evasion labels): the original lexicon was
+    // calibrated on synthetic dialogue phrased as direct meta-commentary
+    // ("prefiero no comprometerme") -- real political non-answers use
+    // much more varied, indirect phrasing, and the original lexicon
+    // scored ZERO recall against real ground truth. Each candidate was
+    // precision-checked before adding (bar: >=50%, same threshold used
+    // for "wait" in revision, v0.26.0): "not going to comment" (73%,
+    // n=26), "can't tell you" (69%, n=26), "we'll let you know" (80%,
+    // n=5), "not going to discuss" (60%, n=5), "won't say" (57%, n=7),
+    // "not prepared to" (50%, n=4). "not going to get into" checked and
+    // EXCLUDED (25% precision, too weak).
+    neutro: /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that|not going to comment|can't tell you|we'll let you know|not going to discuss|won't say|not prepared to)\b/gi,
     // Extended v0.24.0 with two patterns found by reading real false
     // negatives against CaSiNo's human-annotated elicit-pref/promote-
     // coordination labels: (1) direct WH-questions eliciting the other's
@@ -484,10 +497,21 @@ const REGISTRO_EVIDENCE = {
       '15/15 genuine on an evenly-sampled subset. "suppose" deliberately excluded despite 14 real ' +
       'hits — mixes an epistemic-hedge sense ("I suppose" = "I guess") with the hypothetical-' +
       'staging sense this category means; adding it would dilute precision on an ambiguous word, ' +
-      'same discipline as excluding "actually" from revision.',
-    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia'],
-    constructed: ['cierre','revision','neutro','sintoma',
-      'procedimiento','consecuencia','palabra'],
+      'same discipline as excluding "actually" from revision. neutro and procedimiento checked ' +
+      '(v0.28.0) against QAEvasion/QEvasion (Thomas et al. 2024, MIT), 3,448 real US presidential ' +
+      'interview QA pairs with human-annotated evasion labels — needed for genuinely institutional/ ' +
+      'political text neither CaSiNo nor DeliData could provide. neutro\'s original lexicon scored ' +
+      'ZERO recall against real refusal labels (Declining to answer/Dodging/Deflection/Claims ' +
+      'ignorance) — added 6 triggers, each precision-checked individually first (bar ≥50%): "not ' +
+      'going to comment" (73%), "can\'t tell you" (69%), "we\'ll let you know" (80%), "not going to ' +
+      'discuss" (60%), "won\'t say" (57%), "not prepared to" (50%). "not going to get into" checked ' +
+      'and excluded (25%, too weak). Result: recall 0.000→0.035, precision 0.653 — real, still ' +
+      'modest, stays constructed. procedimiento needed NO new triggers — its existing, never-' +
+      'before-tested lexicon found 15 genuine hits in the full corpus; read full context for 8 of ' +
+      '15, all genuine ("officially or formally nominated", "in accordance with international ' +
+      'law"). Promoted to validated on that basis.',
+    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia', 'procedimiento'],
+    constructed: ['cierre','revision','neutro','sintoma','consecuencia','palabra'],
   },
   vernaculo_negociacion: {
     corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues; ' +

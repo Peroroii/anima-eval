@@ -1399,6 +1399,56 @@ describe('fantasia validated via DeliData (v0.27.0) — cognitive-register hypot
   });
 });
 
+describe('QAEvasion corpus (v0.28.0) — neutro improved, procedimiento validated', () => {
+  test('the six new neutro triggers fire correctly, each precision-checked before adding', () => {
+    const cases = [
+      "I'm not going to comment on that.",
+      "I can't tell you that right now.",
+      "We'll let you know when we have more information.",
+      "I'm not going to discuss the details.",
+      "I won't say anything else about it.",
+      "I'm not prepared to answer that today.",
+    ];
+    for (const text of cases){
+      const r = auditTranscript({ turns: [{ speaker:'agent', text }]});
+      let fires = false;
+      for (const reg of Object.values(r.registro_coverage)) if ((reg.neutro||0)>0) fires = true;
+      expect(fires).toBe(true);
+    }
+  });
+
+  test('"not going to get into" was checked and deliberately excluded (25% precision, too weak)', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: "I'm not going to get into that." }]});
+    let fires = false;
+    for (const reg of Object.values(r.registro_coverage)) if ((reg.neutro||0)>0) fires = true;
+    expect(fires).toBe(false);
+  });
+
+  test('procedimiento is now validated, with corpus text naming both real sources', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'This was formally announced yesterday.' }]});
+    expect(r.registro_evidence.formal_reflexivo.validated).toContain('procedimiento');
+    expect(r.registro_evidence.formal_reflexivo.corpus).toMatch(/QAEvasion|QEvasion/);
+  });
+
+  test('real-data check (800-row QAEvasion sample): neutro fires the pinned confusion-matrix counts', () => {
+    const dir = path.join(__dirname, 'fixtures_qevasion');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'qevasion_sample.json')));
+    expect(data.length).toBe(800);
+    const REFUSAL_LABELS = new Set(['Declining to answer', 'Dodging', 'Deflection', 'Claims ignorance']);
+    let tp = 0, fp = 0;
+    for (const row of data){
+      const r = auditTranscript({ turns: [{ speaker: 'agent', text: row.text }] });
+      let fires = false;
+      for (const reg of Object.values(r.registro_coverage)) if ((reg.neutro || 0) > 0) fires = true;
+      const isRefusal = REFUSAL_LABELS.has(row.label);
+      if (isRefusal && fires) tp++;
+      else if (!isRefusal && fires) fp++;
+    }
+    expect(tp).toBe(15);
+    expect(fp).toBe(5);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

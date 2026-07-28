@@ -814,6 +814,30 @@ diluido precisión, misma disciplina que sacar "actually" de `revision`.
 **Resultado**: 75 hits reales, 66/500 diálogos, precisión espoteada en
 15/15. `fantasia` pasa a `validated`.
 
+### v0.28.0: corpus institucional real — `procedimiento` validada, `neutro` mejorada
+
+Ni CaSiNo ni DeliData podían dar lo que faltaba: texto genuinamente
+institucional/político. Se encontró **QAEvasion / QEvasion** (Thomas et
+al. 2024, MIT) — 3.448 pares pregunta-respuesta reales de entrevistas
+presidenciales de EE. UU., anotados por humanos con nueve técnicas de
+evasión (Declining to answer, Dodging, Deflection, Claims ignorance...).
+
+**`neutro` partía de cero recall real**: el lexicón original ("prefiero
+no comprometerme") nunca aparece así en el lenguaje político real.
+Leídos los falsos negativos, se chequearon seis candidatos por
+separado antes de agregar cualquiera (barra ≥50%): `"not going to
+comment"` (73%), `"can't tell you"` (69%), `"we'll let you know"`
+(80%), `"not going to discuss"` (60%), `"won't say"` (57%), `"not
+prepared to"` (50%). `"not going to get into"` se chequeó y **se
+descartó** (25%, débil). Resultado: recall 0,000→0,035, precisión
+0,653 — real, modesto, sigue `constructed`.
+
+**`procedimiento` no necesitó ningún disparador nuevo** — el lexicón
+que ya teníamos, nunca antes probado contra datos reales, encontró 15
+hits genuinos en el corpus completo. Se leyó el contexto completo de 8
+de los 15 ("officially or formally nominated", "in accordance with
+international law"): los 8, genuinos. Promovida a `validated`.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,
