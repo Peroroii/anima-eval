@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.26.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 159/159
+**Versión:** 0.27.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 162/162
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,16 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — `fantasia` validada (DeliData, registro cognitivo)
+
+Revisando qué más podía dar lo que ya teníamos: `neutro` sigue en cero
+en ambos corpus (ausente de verdad). `fantasia` sí tenía algo — el
+lexicón dramático ("sería un desastre") no cubría el registro
+cognitivo/de razonamiento ("what if", "assuming"). 75 hits reales en
+66/500 diálogos de DeliData, precisión espoteada 15/15. `"suppose"`
+excluido a propósito por ambigüedad (mezcla "supongamos" con "supongo
+que"). `fantasia` pasa a `validated`.
 
 ## Fase 2, continuación — `revision` medida contra ground truth conductual
 

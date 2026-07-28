@@ -1361,6 +1361,44 @@ describe('DeliData corpus (v0.26.0) — revision precision-checked against real 
   });
 });
 
+describe('fantasia validated via DeliData (v0.27.0) — cognitive-register hypothetical staging', () => {
+  test('"what if" and "assuming" fire as fantasia, in the cognitive/reasoning register', () => {
+    const r1 = auditTranscript({ turns: [{ speaker:'agent', text: 'What if the card has a vowel on the other side?' }]});
+    let fires1 = false;
+    for (const reg of Object.values(r1.registro_coverage)) if ((reg.fantasia||0)>0) fires1 = true;
+    expect(fires1).toBe(true);
+
+    const r2 = auditTranscript({ turns: [{ speaker:'agent', text: "I'm assuming this is obvious to everyone." }]});
+    let fires2 = false;
+    for (const reg of Object.values(r2.registro_coverage)) if ((reg.fantasia||0)>0) fires2 = true;
+    expect(fires2).toBe(true);
+  });
+
+  test('"suppose" was deliberately NOT added despite 14 real hits in DeliData -- it mixes an ' +
+       'epistemic-hedge sense ("I suppose", "I guess") with the hypothetical-staging sense this ' +
+       'category means, and adding it would dilute precision on an ambiguous word', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'I suppose that could be true.' }]});
+    let fires = false;
+    for (const reg of Object.values(r.registro_coverage)) if ((reg.fantasia||0)>0) fires = true;
+    expect(fires).toBe(false);
+  });
+
+  test('real-data check (50-dialogue DeliData sample): fantasia fires the pinned number of times', () => {
+    const dir = path.join(__dirname, 'fixtures_delidata');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'delidata_sample.json')));
+    let total = 0, withHit = 0;
+    for (const d of data){
+      const both = { turns: d.turns.map(t => ({ speaker: 'agent', text: t.text })) };
+      const r = auditTranscript(both);
+      const n = r.registro_coverage.formal_reflexivo.fantasia || 0;
+      if (n > 0) withHit++;
+      total += n;
+    }
+    expect(total).toBe(14);
+    expect(withHit).toBe(10);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

@@ -791,6 +791,29 @@ aislamiento, pero aproximadamente un quinto del techo del 1,6% que este
 ground truth permite. `revision` sigue `constructed`, no promovida —
 mejora real, reportada exactamente como lo que es.
 
+### v0.27.0: `fantasia` validada — un registro nuevo del mismo fenómeno, en DeliData
+
+Antes de salir a buscar corpus nuevos, se revisaron `neutro` y
+`fantasia` contra los que ya teníamos con otra pregunta: no "¿aparece
+tal cual?" sino "¿el lexicón es angosto?" — la misma lección de
+`apertura`. `neutro` dio cero en ambos corpus, otra vez — genuinamente
+ausente, no una cuestión de cobertura. `fantasia` sí tenía algo: una
+búsqueda amplia en DeliData encontró **240 turnos** con lenguaje
+hipotético que el lexicón angosto (dramático: "sería un desastre") no
+cubría — un registro **cognitivo/de razonamiento** ("what if", "if we
+flip the card"), no emocional, pero el mismo fenómeno que la categoría
+define.
+
+Chequeados tres disparadores por separado: `"what if"` y `"assuming"`
+limpios (muestra de 15 evenly-sampled, 15/15 genuinos). `"suppose"`
+—con 14 hits reales— quedó **deliberadamente afuera**: mezcla el
+sentido de planteo hipotético con "supongo que" (un hedge epistémico,
+no lo que esta categoría mide) — agregar una palabra ambigua hubiera
+diluido precisión, misma disciplina que sacar "actually" de `revision`.
+
+**Resultado**: 75 hits reales, 66/500 diálogos, precisión espoteada en
+15/15. `fantasia` pasa a `validated`.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

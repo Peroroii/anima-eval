@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.27.0 — 2026-07-28
+
+### Added: fantasia validated — a new register of the same phenomenon, found in DeliData
+
+Before searching for new corpora, revisited `neutro` and `fantasia`
+against the ones already in hand with a different question: not "does
+it appear as-is?" but "is the lexicon too narrow?" — the same lesson
+from `apertura`. `neutro` scored zero again in both corpora — genuinely
+absent, not a coverage issue. `fantasia` had something: a broad search
+in DeliData found 240 turns with hypothetical language the narrow
+(dramatic-register) lexicon didn't cover — a cognitive/reasoning
+register ("what if", "if we flip the card"), not emotional, but the
+same phenomenon this category defines.
+
+Checked three candidate triggers separately: `"what if"` and
+`"assuming"` clean (15/15 genuine on an evenly-sampled subset).
+`"suppose"` — despite 14 real hits — deliberately excluded: mixes the
+hypothetical-staging sense with "I suppose" (an epistemic hedge, not
+what this category measures); adding it would dilute precision on an
+ambiguous word, same discipline as excluding "actually" from `revision`.
+
+**Result**: 75 real hits, 66/500 dialogues, precision spot-checked at
+15/15. `fantasia` promoted to `validated`.
+
+162/162 tests passing (4 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.26.0 — 2026-07-28
 
 ### Added: DeliData corpus — an honest ceiling for revision, not a coverage gap

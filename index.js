@@ -373,7 +373,19 @@ const REGISTROS = {
     // can"/"would you be willing" for coordination proposals -- "let's"
     // specifically wasn't covered at all before.
     apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we|what do you need|what are you (?:most |least )?interested in|what is your preference|your preference for|were you needing|did you have any preference|let's|maybe we can|would you be willing)\b/gi,
-    fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine)\b/gi,
+    // Extended v0.27.0 with three markers evidenced from DeliData
+    // (real deliberation dialogue): "what if"/"assuming"/"in that case"
+    // stage a hypothetical in a cognitive/reasoning register, distinct
+    // from the dramatic/emotional register already covered ("sería un
+    // desastre") but the same underlying phenomenon per this category's
+    // definition (Ley II: staging a possibility opens future
+    // reorganization). Deliberately excluded "suppose" despite 14 real
+    // hits -- checked its actual samples and found it mixes two senses
+    // ("let's suppose X" = hypothetical staging we want; "I suppose X"
+    // = an epistemic hedge, "I guess", which is NOT what this category
+    // means) -- adding it would dilute precision on an ambiguous word,
+    // same discipline as excluding "actually" from revision.
+    fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine|what if|assuming|in that case)\b/gi,
     sintoma: /\b(sé que no debería|aunque no es lo ideal|no está bien pero|en contra de mi mejor juicio|against my better judgment|i know i shouldn't but|i know this isn't ideal but|despite my reservations|even though i know)\b/gi,
     // Otro axis (funcionSimbolica) categories — see the theory note below.
     // "FDA"/"regulator" etc. were evidenced from a real transcript
@@ -465,9 +477,16 @@ const REGISTRO_EVIDENCE = {
       'of 34 real). Deliberately did NOT re-add bare "actually" — that removal (v0.15.0) was ' +
       'itself evidenced against CaSiNo and stands. Result: precision 0.486, recall 0.003 — small ' +
       'in isolation, roughly a fifth of the 1.6% ceiling this ground truth allows. Still ' +
-      'constructed, not validated.',
-    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad'],
-    constructed: ['cierre','revision','neutro','fantasia','sintoma',
+      'constructed, not validated. fantasia validated (v0.27.0) against the same DeliData corpus: ' +
+      'found 75 real hits across 66/500 dialogues ("what if", "assuming", "in that case" — ' +
+      'hypothetical staging in a cognitive/reasoning register, distinct from the dramatic register ' +
+      'already covered but the same phenomenon per this category\'s definition), spot-checked at ' +
+      '15/15 genuine on an evenly-sampled subset. "suppose" deliberately excluded despite 14 real ' +
+      'hits — mixes an epistemic-hedge sense ("I suppose" = "I guess") with the hypothetical-' +
+      'staging sense this category means; adding it would dilute precision on an ambiguous word, ' +
+      'same discipline as excluding "actually" from revision.',
+    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad', 'fantasia'],
+    constructed: ['cierre','revision','neutro','sintoma',
       'procedimiento','consecuencia','palabra'],
   },
   vernaculo_negociacion: {
