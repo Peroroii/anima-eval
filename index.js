@@ -354,7 +354,15 @@ const REGISTROS = {
     revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
     concesivo: /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi,
     neutro: /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi,
-    apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we)\b/gi,
+    // Extended v0.24.0 with two patterns found by reading real false
+    // negatives against CaSiNo's human-annotated elicit-pref/promote-
+    // coordination labels: (1) direct WH-questions eliciting the other's
+    // preference/need ("what do you need", "what is your preference") --
+    // a completely different syntax than the exploratory-proposal
+    // pattern this category originally covered; (2) "let's"/"maybe we
+    // can"/"would you be willing" for coordination proposals -- "let's"
+    // specifically wasn't covered at all before.
+    apertura: /\b(qué tal si|podríamos|valdría la pena|vale la pena considerar|exploremos|me pregunto si|and what if|what if we|let's consider|worth considering|i wonder if|could we|shall we|what do you need|what are you (?:most |least )?interested in|what is your preference|your preference for|were you needing|did you have any preference|let's|maybe we can|would you be willing)\b/gi,
     fantasia: /\b(imaginate|imagina que|imagínate|sería increíble|sería terrible|sería un desastre|en el peor de los casos|en el mejor de los casos|imagine if|picture this|what a disaster|what a dream|in the worst case|in the best case|just imagine)\b/gi,
     sintoma: /\b(sé que no debería|aunque no es lo ideal|no está bien pero|en contra de mi mejor juicio|against my better judgment|i know i shouldn't but|i know this isn't ideal but|despite my reservations|even though i know)\b/gi,
     // Otro axis (funcionSimbolica) categories — see the theory note below.
@@ -408,11 +416,21 @@ const REGISTRO_EVIDENCE = {
       'comisivo also cross-checked against 1 real transcript (Gemini 2.0 Flash / SnitchBench); ' +
       'apertura and concesivo validated against CaSiNo (Chawla et al. 2021, NAACL, CC BY 4.0), ' +
       '1030 real human-human negotiation dialogues — spot-checked by hand for PRECISION only ' +
-      '(7/8 and 6/8 samples genuine). "validated" here means precision-checked on a small sample, ' +
-      'NOT recall-checked: casino_strategy_alignment.js (v0.23.0) measured recall against CaSiNo\'s ' +
-      'own human-annotated persuasion-strategy labels (elicit-pref/promote-coordination for ' +
-      'apertura, showing-empathy for concesivo) and found it very low (0.3%-2.4%) — these lexicons ' +
-      'catch a small fraction of real instances of the phenomenon, even where precision is fine. ' +
+      '(7/8 and 6/8 samples genuine). "validated" means precision-checked on a small sample, NOT ' +
+      'recall-checked: casino_strategy_alignment.js (v0.23.0) measured recall against CaSiNo\'s own ' +
+      'human-annotated persuasion-strategy labels and found apertura\'s recall very low (0.3%-1.4%) ' +
+      'against elicit-pref/promote-coordination. Read the real false negatives (v0.24.0, not ' +
+      'guessed at) and found apertura\'s lexicon only covered exploratory PROPOSALS ("qué tal si", ' +
+      '"could we"), completely missing direct WH-questions eliciting preference ("what do you ' +
+      'need") and "let\'s"-style coordination — added both, evidenced from the real false ' +
+      'negatives themselves. Recall rose to 11.4% (elicit-pref) and 8.8% (promote-coordination) ' +
+      'against the full corpus — a real, measured improvement, still modest, not claimed as more ' +
+      'than it is. The concesivo/showing-empathy mapping used for the original recall check was ' +
+      'RETIRED (not extended) after the same false-negative reading showed it was a category ' +
+      'error — showing-empathy is affective ("I\'m sorry to hear that"), concesivo is epistemic ' +
+      'concession ("you\'re right, however") — confirmed by its recall staying flat (0.024) even ' +
+      'as apertura\'s recall jumped elsewhere in the same release. concesivo\'s own `validated` tag ' +
+      'still rests on its original spot-check, independent of this retired cross-check. ' +
       'revision\'s bare "actually" trigger was REMOVED after the same corpus showed it 98% ' +
       'false-positive (105/107 hits were the intensifier sense, not self-correction) — a real ' +
       'fix, not a promotion.',

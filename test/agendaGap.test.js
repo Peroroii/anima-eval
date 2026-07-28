@@ -1247,17 +1247,32 @@ describe('casino_strategy_alignment.js (Fase 2, v0.23.0) — real precision/reca
     expect(true).toBe(true); // decision record, not a functional assertion
   });
 
-  test('elicit-pref/promote-coordination (apertura) and showing-empathy (concesivo) all show very ' +
-       'low recall against CaSiNo\'s human-annotated strategy labels -- the v0.15.0 spot-check only ' +
-       'ever checked precision on a small hand-picked sample, never recall against comprehensive ' +
-       'ground truth. Pinned against the committed 50-dialogue sample so it can be tracked, not ' +
-       'quietly forgotten.', () => {
+  test('elicit-pref/promote-coordination (apertura) recall improved substantially after reading ' +
+       'real false negatives and adding the two evidenced patterns actually missing (direct ' +
+       'WH-preference questions, "let\'s"-style coordination) -- pinned against the committed ' +
+       '50-dialogue sample so future changes are measured against a real number, not just hoped ' +
+       'to be better.', () => {
     delete require.cache[require.resolve('../casino_strategy_alignment.js')];
     const originalLog = console.log; console.log = () => {};
-    const { resultados } = require('../casino_strategy_alignment.js');
+    const { resultados, REJECTED_MAPPINGS } = require('../casino_strategy_alignment.js');
     console.log = originalLog;
 
-    for (const r of resultados) expect(r.recall).toBeLessThan(0.05);
+    expect(resultados.length).toBe(2); // showing-empathy/concesivo retired, not just improved
+    for (const r of resultados) expect(r.recall).toBeGreaterThan(0.1);
+
+    expect(REJECTED_MAPPINGS.length).toBe(1);
+    expect(REJECTED_MAPPINGS[0].label).toBe('showing-empathy');
+  });
+
+  test('showing-empathy/concesivo was RETIRED as a category error (affective vs. epistemic ' +
+       'concession), not chased with more vocabulary -- its recall stayed flat at 0.024 even ' +
+       'after apertura\'s real gaps were fixed in the same release, confirming it was never a ' +
+       'coverage problem to begin with', () => {
+    delete require.cache[require.resolve('../casino_strategy_alignment.js')];
+    const originalLog = console.log; console.log = () => {};
+    const { REJECTED_MAPPINGS } = require('../casino_strategy_alignment.js');
+    console.log = originalLog;
+    expect(REJECTED_MAPPINGS[0].reason).toMatch(/category error/);
   });
 });
 

@@ -715,6 +715,31 @@ casos reales etiquetados. `REGISTRO_EVIDENCE` se actualizó para que
 muestra, no por recall contra ground truth — una distinción que hacía
 falta dejar explícita, no implícita.
 
+### v0.24.0: investigar el número humillante, no solo mencionarlo
+
+En vez de aceptar el 0,3%–2,4% de recall como un límite dado, se leyeron
+los **falsos negativos reales** — las oraciones que humanos etiquetaron
+con la estrategia y que el sistema no capturaba — antes de tocar
+cualquier código, mismo método que la suite adversarial.
+
+**Dos gaps reales, cerrados con evidencia.** `apertura` solo cubría
+propuestas exploratorias ("qué tal si", "could we") y no tenía ningún
+patrón para **preguntas WH directas** sobre preferencia ("what do you
+need", "what is your preference") ni para propuestas de coordinación
+tipo "let's" — un vacío sintáctico completo, no un problema de
+sinónimos. Agregados ambos patrones, evidenciados directamente de los
+falsos negativos leídos. Resultado: recall de `elicit-pref` 0,3%→11,4%
+(38×), `promote-coordination` 1,4%→8,8% (6×).
+
+**Un mapeo retirado, no forzado.** `showing-empathy↔concesivo` no
+mejoró en absoluto (se quedó en 0,024) — porque no era un problema de
+cobertura léxica. Leyendo los falsos negativos quedó claro que
+`showing-empathy` es una categoría **afectiva** ("qué mal, lo siento")
+completamente distinta de la concesión **epistémica** que `concesivo`
+rastrea ("tenés razón", "sin embargo"). Es el mismo tipo de error de
+categoría que se evitó con ART/αNLI — solo que ahí se cometió primero y
+recién ahora se corrige, con los propios datos como evidencia.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

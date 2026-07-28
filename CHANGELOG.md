@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.24.0 — 2026-07-28
+
+### Fixed: real false-negative analysis instead of accepting the low recall as given
+
+Read actual false negatives — sentences humans labeled with a strategy
+that the system missed — before touching any code, same method as the
+adversarial suite.
+
+**Two real gaps closed with evidence.** `apertura` only covered
+exploratory proposals ("qué tal si", "could we") and had no pattern at
+all for direct WH-questions eliciting preference ("what do you need",
+"what is your preference") or "let's"-style coordination proposals — a
+complete syntactic gap, not a synonym problem. Added both, evidenced
+directly from the false negatives read. Result: `elicit-pref` recall
+0.3%→11.4% (38x), `promote-coordination` 1.4%→8.8% (6x), against the
+full 1030-dialogue corpus.
+
+**One mapping retired, not chased.** `showing-empathy↔concesivo` didn't
+improve at all (stayed at 0.024) — because it was never a coverage
+problem. Reading the false negatives showed `showing-empathy` is an
+AFFECTIVE category ("oh dear, I'm sorry to hear that") entirely
+different from `concesivo`'s EPISTEMIC concession ("you're right,
+however"). The same class of category error the ART/αNLI rejection
+avoided — made here first, corrected now with the package's own data as
+evidence. `casino_strategy_alignment.js` updated: `PAIRS` now has 2
+entries, `REJECTED_MAPPINGS` documents the retirement with its reasoning.
+
+`REGISTRO_EVIDENCE` updated with the full story — improvement, method,
+and honest remaining modesty of the numbers.
+
+154/154 tests passing (regression test rewritten to assert the real
+improvement, not just a ceiling). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.23.0 — 2026-07-28
 
 ### Investigated and rejected: ART/αNLI. Added: real recall measurement against CaSiNo ground truth

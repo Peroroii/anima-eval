@@ -38,10 +38,40 @@ const { auditTranscript } = require('./index.js');
 const CASINO_FULL_PATH = process.env.CASINO_FULL_PATH || null; // set to run against all 1030
 const SAMPLE_PATH = path.join(__dirname, 'test', 'fixtures_casino', 'casino_sample.json');
 
+// Investigated real false negatives (v0.24.0) before touching anything,
+// same discipline as the ART/αNLI rejection: read actual sentences
+// labeled elicit-pref/promote-coordination/showing-empathy that this
+// package's categories were missing, rather than guessing at fixes.
+//
+// Two real, evidenced gaps closed: apertura's lexicon (index.js,
+// REGISTROS.formal_reflexivo.apertura) only covered exploratory
+// PROPOSALS ("qué tal si", "could we") and completely missed direct
+// WH-QUESTIONS eliciting the other's preference ("what do you need",
+// "what is your preference") and "let's"-style coordination proposals —
+// a different syntax entirely, not a vocabulary gap. Recall jumped
+// 0.3%->11.4% (elicit-pref) and 1.4%->8.8% (promote-coordination).
+//
+// One mapping RETIRED, not extended: showing-empathy/concesivo. Reading
+// the false negatives showed showing-empathy is AFFECTIVE ("oh dear,
+// I'm sorry to hear that", "that's a bummer", "I know how that goes") —
+// a genuinely different phenomenon from concesivo's EPISTEMIC/
+// argumentative concession ("you're right", "however"). No amount of
+// vocabulary extension would fix this because the categories don't
+// describe the same thing — the same class of category error the
+// ART/αNLI rejection avoided, caught here only after already having
+// made it. Recall for this pair stayed flat (0.024) even after apertura
+// improved sharply elsewhere, confirming it wasn't a coverage problem.
 const PAIRS = [
   { label: 'elicit-pref', categoria: 'apertura' },
   { label: 'promote-coordination', categoria: 'apertura' },
-  { label: 'showing-empathy', categoria: 'concesivo' },
+];
+
+const REJECTED_MAPPINGS = [
+  { label: 'showing-empathy', categoria: 'concesivo',
+    reason: 'category error, not a coverage gap -- showing-empathy is affective ' +
+      '("I\'m sorry to hear that"), concesivo is epistemic/argumentative concession ' +
+      '("you\'re right, however") -- confirmed by recall staying flat (0.024) even after ' +
+      'apertura\'s real coverage gaps were fixed elsewhere in the same release' },
 ];
 
 const NOT_MAPPED = ['self-need', 'other-need', 'no-need', 'vouch-fair', 'small-talk', 'non-strategic'];
@@ -86,5 +116,8 @@ for (const r of resultados)
   console.log(`${r.label} <-> ${r.categoria}: precisión=${r.precision.toFixed(3)} recall=${r.recall.toFixed(3)} F1=${r.f1.toFixed(3)} (TP=${r.tp} FP=${r.fp} FN=${r.fn})`);
 console.log();
 console.log('NO mapeadas a ninguna categoría (deliberado, no forzado):', NOT_MAPPED.join(', '));
+console.log();
+console.log('=== Mapeos RETIRADOS (error de categoría, no de cobertura) ===');
+for (const m of REJECTED_MAPPINGS) console.log(`${m.label} <-> ${m.categoria}: ${m.reason}`);
 
-module.exports = { PAIRS, NOT_MAPPED, resultados };
+module.exports = { PAIRS, NOT_MAPPED, REJECTED_MAPPINGS, resultados };

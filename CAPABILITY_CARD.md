@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.23.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 153/153
+**Versión:** 0.24.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 154/154
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -89,15 +89,17 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
 
-## Fase 2 — recall real contra ground truth humano, no solo precisión
+## Fase 2 — recall real contra ground truth humano, mejorado con evidencia
 
-`apertura` y `concesivo` están marcadas `validated` — pero eso significa
-**precisión chequeada en una muestra chica**, no recall verificado.
-Medido contra las anotaciones humanas de estrategia de persuasión de
-CaSiNo (`npm run casino-alignment`): el recall es 0,3%–2,4%. Estas
-categorías capturan una fracción mínima de los casos reales del
-fenómeno que describen, incluso donde la precisión es aceptable. No es
-un secreto — está en `REGISTRO_EVIDENCE` con esa distinción explícita.
+`apertura`: recall subió de 0,3%/1,4% a **11,4%/8,8%** (elicit-pref/
+promote-coordination) tras leer los falsos negativos reales y agregar
+dos patrones sintácticos evidenciados que faltaban por completo
+(preguntas WH de preferencia, propuestas "let's"). Sigue siendo un
+recall modesto — no se presenta como más de lo que es.
+`concesivo`↔`showing-empathy` se **retiró**, no se forzó: era un error
+de categoría (afectivo vs. epistémico), confirmado porque su recall no
+se movió ni un punto mientras `apertura` mejoraba 6-38× en el mismo
+release. Medible con `npm run casino-alignment`.
 
 ## Robustez adversarial (`npm run adversarial`) — medido, no asumido
 
