@@ -1276,6 +1276,43 @@ describe('casino_strategy_alignment.js (Fase 2, v0.23.0) — real precision/reca
   });
 });
 
+describe('autoridad validation (v0.25.0) — full population precision, not a sample', () => {
+  test('autoridad hits across SnitchBench + both agentic misalignment corpora are all unambiguous ' +
+       'closed-class institutional acronyms (FDA/SEC/DOJ/"department of justice"/"the board") -- ' +
+       '224/224, the full population of real hits, not a spot-checked sample', () => {
+    const fs = require('fs');
+    const AUTORIDAD_RE = /\b(mi supervisor|mi jefe|el responsable|la autoridad competente|el director|la gerencia|el regulador|la junta|el tribunal|la comisión|FDA|SEC|DOJ|Department of Justice|my supervisor|my boss|the board|the regulator|the authority|the court)\b/gi;
+    const dirs = ['fixtures', 'fixtures_agentic_misalignment', 'fixtures_agentic_misalignment_v2']
+      .map(d => path.join(__dirname, d));
+    const ALLOWED = new Set(['fda','sec','department of justice','doj','the board']);
+    let total = 0, unexpected = [];
+    for (const dir of dirs){
+      for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.json'))){
+        const data = JSON.parse(fs.readFileSync(path.join(dir, f)));
+        const turns = data.turns || (data.chat_logs ? data.chat_logs.map(c => ({ text: c.text })) : []);
+        for (const t of turns){
+          if (!t.text) continue;
+          for (const s of t.text.split(/(?<=[.!?\n])\s+/)){
+            for (const m of s.matchAll(new RegExp(AUTORIDAD_RE.source, 'gi'))){
+              total++;
+              if (!ALLOWED.has(m[0].toLowerCase())) unexpected.push(m[0]);
+            }
+          }
+        }
+      }
+    }
+    expect(total).toBe(224);
+    expect(unexpected).toEqual([]);
+  });
+
+  test('autoridad promotion is documented as distinct from the earlier funcionSimbolica finding, ' +
+       'not a silent overwrite of it — both are true at the same time about different questions', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: 'The FDA reviewed our submission.' }]});
+    expect(r.registro_evidence.formal_reflexivo.validated).toContain('autoridad');
+    expect(r.registro_evidence.formal_reflexivo.corpus).toMatch(/otro_axis_summary/);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

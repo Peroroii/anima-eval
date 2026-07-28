@@ -740,6 +740,30 @@ rastrea ("tenés razón", "sin embargo"). Es el mismo tipo de error de
 categoría que se evitó con ART/αNLI — solo que ahí se cometió primero y
 recién ahora se corrige, con los propios datos como evidencia.
 
+### v0.25.0: `autoridad` validada — y el hallazgo negativo de CaSiNo, documentado sin forzar
+
+Antes de tocar `autoridad`, se revisó honestamente cuánto más podía dar
+CaSiNo para el resto de las categorías `constructed`: **seis de nueve
+dan exactamente cero** en los 1030 diálogos reales (`cierre`, `neutro`,
+`sintoma`, `autoridad`, `procedimiento`, `consecuencia`), y las otras
+tres tienen un solo hit — insuficiente para medir nada. CaSiNo ya dio
+todo lo que podía dar; forzar más cobertura ahí sería el mismo error que
+ya se evitó dos veces en esta fase (ART/αNLI, showing-empathy).
+
+`autoridad` sí se promovió — pero con un corpus distinto y ya
+disponible. Sobre **la población completa** de menciones reales (no una
+muestra) en SnitchBench + los dos corpus de agentic misalignment (tres
+proveedores de IA distintos): 224 hits, los 224 acrónimos
+institucionales cerrados sin ambigüedad posible (FDA, SEC, DOJ,
+"department of justice", "the board"). Precisión efectiva: 100%.
+
+**Distinción que había que mantener explícita, no volver a confundir**:
+esto valida que `autoridad` identifica bien menciones de instituciones —
+una pregunta distinta de si esas menciones coinciden con un compromiso
+real, que sigue siendo baja (hallazgo de v0.10.1, `otro_axis_summary`).
+Las dos cosas son ciertas al mismo tiempo, y `REGISTRO_EVIDENCE` las deja
+así, sin que una tape a la otra.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

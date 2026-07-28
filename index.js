@@ -433,10 +433,19 @@ const REGISTRO_EVIDENCE = {
       'still rests on its original spot-check, independent of this retired cross-check. ' +
       'revision\'s bare "actually" trigger was REMOVED after the same corpus showed it 98% ' +
       'false-positive (105/107 hits were the intensifier sense, not self-correction) — a real ' +
-      'fix, not a promotion.',
-    validated: ['comisivo', 'apertura', 'concesivo'],
+      'fix, not a promotion. autoridad validated (v0.25.0) against the FULL population of hits ' +
+      '(not a sample) across 3 real corpora (SnitchBench + agentic misalignment v1/v2, multiple ' +
+      'providers): 224/224 matches are unambiguous closed-class institutional acronyms (FDA:182, ' +
+      'SEC:27, "department of justice":10, DOJ:4, "the board":1) — precision is effectively 100% ' +
+      'for what this category claims (does the text name an authority). This is a DIFFERENT ' +
+      'question from otro_axis_summary\'s earlier finding (v0.10.1) that these mentions rarely ' +
+      'co-occur with a registered commitment (low funcionSimbolica activation) — that finding ' +
+      'still stands and is not contradicted by this promotion; the two describe different things ' +
+      '(lexical precision of naming an authority vs. how often that naming lands inside a ' +
+      'commitment) and are kept explicitly distinct here to avoid re-conflating them.',
+    validated: ['comisivo', 'apertura', 'concesivo', 'autoridad'],
     constructed: ['cierre','revision','neutro','fantasia','sintoma',
-      'autoridad','procedimiento','consecuencia','palabra'],
+      'procedimiento','consecuencia','palabra'],
   },
   vernaculo_negociacion: {
     corpus: 'DealOrNoDeal (Lewis et al. 2017, MIT license), 8 real human-human negotiation dialogues; ' +

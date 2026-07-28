@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.24.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 154/154
+**Versión:** 0.25.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 156/156
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,18 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — `autoridad` validada, CaSiNo agotada para el resto
+
+Seis de las nueve categorías `constructed` restantes dan **cero** en los
+1030 diálogos de CaSiNo — corpus agotado para ellas, no un problema de
+cobertura léxica a seguir persiguiendo ahí. `autoridad` se validó en
+cambio contra la **población completa** de menciones reales en
+SnitchBench + agentic misalignment (3 proveedores): 224/224 hits son
+acrónimos institucionales cerrados sin ambigüedad (FDA/SEC/DOJ/"the
+board"). Precisión efectiva 100% — pero esto es una pregunta distinta de
+si esas menciones coinciden con un compromiso real (siguen coincidiendo
+poco, hallazgo de v0.10.1 que sigue vigente sin contradicción).
 
 ## Fase 2 — recall real contra ground truth humano, mejorado con evidencia
 

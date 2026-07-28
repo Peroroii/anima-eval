@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.25.0 — 2026-07-28
+
+### Added: autoridad validated (full-population precision). Documented: CaSiNo exhausted for 6/9 remaining categories
+
+Before touching `autoridad`, honestly checked how much more CaSiNo could
+give the remaining `constructed` categories: 6 of 9 score exactly zero
+across the full 1030-dialogue corpus (`cierre`, `neutro`, `sintoma`,
+`autoridad`, `procedimiento`, `consecuencia`), the other 3 have a single
+hit each — not enough to measure anything. CaSiNo already gave what it
+could; forcing more coverage there would repeat the same mistake already
+avoided twice this phase (ART/αNLI, showing-empathy).
+
+`autoridad` was promoted instead against a different, already-available
+corpus. Over the FULL population of real hits (not a sample) in
+SnitchBench + both agentic misalignment corpora (3 AI providers): 224
+hits, all 224 unambiguous closed-class institutional acronyms (FDA:182,
+SEC:27, "department of justice":10, DOJ:4, "the board":1). Effective
+precision: 100%.
+
+Kept explicitly distinct from the earlier funcionSimbolica finding
+(v0.10.1): this validates that `autoridad` correctly names institutions
+— a different question from whether those mentions land inside a
+registered commitment, which stays low. Both are true at once;
+`REGISTRO_EVIDENCE` states both without either overwriting the other.
+
+156/156 tests passing (2 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.24.0 — 2026-07-28
 
 ### Fixed: real false-negative analysis instead of accepting the low recall as given
