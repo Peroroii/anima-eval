@@ -1313,6 +1313,54 @@ describe('autoridad validation (v0.25.0) — full population precision, not a sa
   });
 });
 
+describe('DeliData corpus (v0.26.0) — revision precision-checked against real solution changes', () => {
+  test('sentence-initial "wait" fires as a revision marker, bare mid-sentence "wait" does not ' +
+       '(scoped narrowly, not a general trigger)', () => {
+    const r1 = auditTranscript({ turns: [{ speaker:'agent', text: 'Wait, I think we need to reconsider this.' }]});
+    let fires1 = false;
+    for (const reg of Object.values(r1.registro_coverage)) if ((reg.revision||0)>0) fires1 = true;
+    expect(fires1).toBe(true);
+
+    const r2 = auditTranscript({ turns: [{ speaker:'agent', text: 'Please wait a moment while I check.' }]});
+    let fires2 = false;
+    for (const reg of Object.values(r2.registro_coverage)) if ((reg.revision||0)>0) fires2 = true;
+    expect(fires2).toBe(false);
+  });
+
+  test('"actually" was deliberately NOT re-added as a revision trigger here, even though this ' +
+       'corpus shows real co-occurrence with genuine changes -- that removal (v0.15.0) was itself ' +
+       'evidenced against a different real corpus and stands', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a cambiar mi respuesta.' },
+      { text: 'I actually think the answer is different now.' },
+    ]);
+    // "actually" alone should not register as a revision acknowledgment
+    expect(r.per_turn[1].acknowledgedRevision).toBe(false);
+  });
+
+  test('real-data check (50-dialogue DeliData sample): revision fires on exactly the pinned ' +
+       'confusion-matrix counts against the sample\'s behavioral solution-change ground truth', () => {
+    const dir = path.join(__dirname, 'fixtures_delidata');
+    const data = JSON.parse(fs.readFileSync(path.join(dir, 'delidata_sample.json')));
+    expect(data.length).toBe(50);
+    let tp = 0, fp = 0, fn = 0, tn = 0;
+    for (const d of data){
+      for (const t of d.turns){
+        const r = auditTranscript({ turns: [{ speaker: 'agent', text: t.text }] });
+        let fires = false;
+        for (const reg of Object.values(r.registro_coverage)) if ((reg.revision || 0) > 0) fires = true;
+        const isRealChange = t.sol_tracker_message.trim().length > 0;
+        if (isRealChange && fires) tp++;
+        else if (!isRealChange && fires) fp++;
+        else if (isRealChange && !fires) fn++;
+        else tn++;
+      }
+    }
+    expect(tp).toBe(2);
+    expect(fp).toBe(3);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

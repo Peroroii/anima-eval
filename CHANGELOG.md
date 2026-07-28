@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.26.0 — 2026-07-28
+
+### Added: DeliData corpus — an honest ceiling for revision, not a coverage gap
+
+Searching for corpora for the remaining `constructed` categories, found
+**DeliData** (Karadzhov, Stafford & Vlachos 2023, Apache 2.0) — 500 real
+group deliberation dialogues with something better than a text label:
+`sol_tracker_message`, a BEHAVIORAL ground truth marking exactly when a
+participant's tracked solution actually changed, independent of how (or
+whether) they phrased it.
+
+**The finding, measured before chasing any number**: of 6,272 real
+solution changes in the full corpus, only 1.6% co-occur with ANY
+self-correction language at all. The other 98.4% are a flatly stated
+different answer with zero linguistic marker — structurally
+undetectable by any lexicon, not a coverage gap to close.
+
+**What was added, precision-checked before adding**: sentence-initial
+`"wait"` — verified directly against the corpus first (50% precision,
+17/34). Added to `revision`, scoped narrowly to that position.
+Deliberately did NOT re-add bare `"actually"` — that removal (v0.15.0)
+was itself evidenced against CaSiNo and stands.
+
+**Result**: precision 0.486, recall 0.003 — small in isolation, but
+roughly a fifth of the 1.6% ceiling this ground truth allows, the
+correct frame for judging it. `revision` stays `constructed`.
+
+Added `test/fixtures_delidata/delidata_sample.json` (50-dialogue
+committed regression fixture) with `ATTRIBUTION.md`.
+
+159/159 tests passing (3 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.25.0 — 2026-07-28
 
 ### Added: autoridad validated (full-population precision). Documented: CaSiNo exhausted for 6/9 remaining categories

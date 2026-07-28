@@ -764,6 +764,33 @@ real, que sigue siendo baja (hallazgo de v0.10.1, `otro_axis_summary`).
 Las dos cosas son ciertas al mismo tiempo, y `REGISTRO_EVIDENCE` las deja
 así, sin que una tape a la otra.
 
+### v0.26.0: buscando corpus para las categorías restantes — un techo honesto, no un fracaso
+
+Encontrado **DeliData** (Karadzhov, Stafford & Vlachos 2023, Apache 2.0)
+— 500 diálogos reales de deliberación grupal, con algo mejor que una
+etiqueta de texto: `sol_tracker_message`, ground truth **conductual**
+que marca cuándo la solución propuesta por un participante cambió de
+verdad, sin importar cómo (o si) lo dijo con palabras.
+
+**El hallazgo, medido antes de perseguir ningún número**: de 6.272
+cambios reales de solución en el corpus completo, solo el 1,6% coincide
+con *algún* marcador lingüístico de autocorrección — el resto es,
+lisa y llanamente, una respuesta distinta afirmada sin ninguna marca,
+estructuralmente indetectable por cualquier lexicón. Esto no es un
+vacío de cobertura a cerrar — es el techo real del método.
+
+**Lo que sí se agregó, evidenciado y chequeado en precisión antes de
+sumarlo**: `"wait"` al inicio de oración — verificado directo contra el
+corpus: 50% de precisión (17 de 34). Agregado a `revision`, acotado a
+esa posición específica. Deliberadamente **no** se volvió a agregar
+`"actually"` — esa eliminación (v0.15.0) fue evidenciada contra otro
+corpus real y se mantiene, no se contradice acá.
+
+**Resultado**: precisión 0,486, recall 0,003 — un número chico en
+aislamiento, pero aproximadamente un quinto del techo del 1,6% que este
+ground truth permite. `revision` sigue `constructed`, no promovida —
+mejora real, reportada exactamente como lo que es.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.25.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 156/156
+**Versión:** 0.26.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 159/159
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,17 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — `revision` medida contra ground truth conductual
+
+DeliData (500 diálogos reales de deliberación, Apache 2.0) da algo mejor
+que etiquetas de texto: si la solución propuesta por alguien cambió de
+verdad. Hallazgo honesto primero: solo 1,6% de 6.272 cambios reales
+tienen algún marcador lingüístico — el resto es indetectable por
+cualquier lexicón, techo real no vacío de cobertura. Se agregó `"wait"`
+al inicio de oración (50% precisión, chequeada antes de sumarla).
+Resultado: precisión 0,486, recall 0,003 (~1/5 del techo posible).
+`revision` sigue `constructed`.
 
 ## Fase 2, continuación — `autoridad` validada, CaSiNo agotada para el resto
 

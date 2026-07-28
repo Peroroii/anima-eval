@@ -351,7 +351,17 @@ const REGISTROS = {
     // not "let me correct myself") — a real false-positive source, caught
     // by testing at scale, not assumed. The one genuine revision in that
     // corpus ("on second thought") still fires via its own phrase.
-    revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b/gi,
+    // "wait" added (v0.26.0), scoped to SENTENCE-INITIAL position only --
+    // evidenced from DeliData (Karadzhov et al. 2023, Apache 2.0), 500
+    // real group deliberation dialogues with a behavioral ground truth
+    // (did the participant's tracked solution actually change). Checked
+    // precision directly before adding: sentence-initial "wait" preceded
+    // a real solution change 50% of the time (17/34) -- far from perfect
+    // but genuinely evidenced, unlike bare "actually" anywhere in a
+    // sentence (removed in v0.15.0 after showing 98% false-positive in a
+    // different register). Deliberately NOT re-adding "actually" here --
+    // that removal was evidenced and stands; this is a different marker.
+    revision: /\b(en realidad|corrijo|me equivoqué|cambio de opinión|ahora creo|reconozco que|reconsiderando|i was wrong|i take that back|on second thought|to correct myself|let me correct)\b|^\s*wait\b/gi,
     concesivo: /\b(ten[ée]s razón|tienes razón|es cierto|sin embargo|no obstante|aunque|you're right|that's true|however|although|even so|that said|fair enough)\b/gi,
     neutro: /\b(prefiero no comprometerme|no puedo asegurar|no voy a comprometerme|no puedo prometer|no te puedo asegurar|i'd rather not commit|i can't promise|i won't commit to|no promises|not committing to that)\b/gi,
     // Extended v0.24.0 with two patterns found by reading real false
@@ -442,7 +452,20 @@ const REGISTRO_EVIDENCE = {
       'co-occur with a registered commitment (low funcionSimbolica activation) — that finding ' +
       'still stands and is not contradicted by this promotion; the two describe different things ' +
       '(lexical precision of naming an authority vs. how often that naming lands inside a ' +
-      'commitment) and are kept explicitly distinct here to avoid re-conflating them.',
+      'commitment) and are kept explicitly distinct here to avoid re-conflating them. ' +
+      'consecuencia has 5 real hits across the same corpora (all genuine, e.g. "will result in ' +
+      'mass casualties") but n=5 is too small to promote — evidence-motivated, kept constructed, ' +
+      'not inflated to match autoridad\'s 224-hit validation. revision checked (v0.26.0) against ' +
+      'DeliData (Karadzhov et al. 2023, Apache 2.0), 500 real deliberation dialogues with a ' +
+      'BEHAVIORAL ground truth (sol_tracker_message: did the participant\'s tracked solution ' +
+      'actually change) — found an honest ceiling first, not chased: only 1.6% of 6,272 real ' +
+      'solution changes co-occur with ANY self-correction language at all, the rest are a flatly ' +
+      'stated different answer with zero linguistic marker, structurally undetectable by any ' +
+      'lexicon. Added sentence-initial "wait" (50% precision, checked directly before adding, 17 ' +
+      'of 34 real). Deliberately did NOT re-add bare "actually" — that removal (v0.15.0) was ' +
+      'itself evidenced against CaSiNo and stands. Result: precision 0.486, recall 0.003 — small ' +
+      'in isolation, roughly a fifth of the 1.6% ceiling this ground truth allows. Still ' +
+      'constructed, not validated.',
     validated: ['comisivo', 'apertura', 'concesivo', 'autoridad'],
     constructed: ['cierre','revision','neutro','fantasia','sintoma',
       'procedimiento','consecuencia','palabra'],
