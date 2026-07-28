@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.22.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 151/151
+**Versión:** 0.23.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 153/153
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,16 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2 — recall real contra ground truth humano, no solo precisión
+
+`apertura` y `concesivo` están marcadas `validated` — pero eso significa
+**precisión chequeada en una muestra chica**, no recall verificado.
+Medido contra las anotaciones humanas de estrategia de persuasión de
+CaSiNo (`npm run casino-alignment`): el recall es 0,3%–2,4%. Estas
+categorías capturan una fracción mínima de los casos reales del
+fenómeno que describen, incluso donde la precisión es aceptable. No es
+un secreto — está en `REGISTRO_EVIDENCE` con esa distinción explícita.
 
 ## Robustez adversarial (`npm run adversarial`) — medido, no asumido
 

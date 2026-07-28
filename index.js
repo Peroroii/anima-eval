@@ -407,10 +407,15 @@ const REGISTRO_EVIDENCE = {
     corpus: 'synthetic dialogue written by this package\'s authors; ' +
       'comisivo also cross-checked against 1 real transcript (Gemini 2.0 Flash / SnitchBench); ' +
       'apertura and concesivo validated against CaSiNo (Chawla et al. 2021, NAACL, CC BY 4.0), ' +
-      '1030 real human-human negotiation dialogues — spot-checked by hand (7/8 and 6/8 samples ' +
-      'genuine), not a full precision/recall pass like benchmark.js. revision\'s bare "actually" ' +
-      'trigger was REMOVED after the same corpus showed it 98% false-positive (105/107 hits were ' +
-      'the intensifier sense, not self-correction) — a real fix, not a promotion.',
+      '1030 real human-human negotiation dialogues — spot-checked by hand for PRECISION only ' +
+      '(7/8 and 6/8 samples genuine). "validated" here means precision-checked on a small sample, ' +
+      'NOT recall-checked: casino_strategy_alignment.js (v0.23.0) measured recall against CaSiNo\'s ' +
+      'own human-annotated persuasion-strategy labels (elicit-pref/promote-coordination for ' +
+      'apertura, showing-empathy for concesivo) and found it very low (0.3%-2.4%) — these lexicons ' +
+      'catch a small fraction of real instances of the phenomenon, even where precision is fine. ' +
+      'revision\'s bare "actually" trigger was REMOVED after the same corpus showed it 98% ' +
+      'false-positive (105/107 hits were the intensifier sense, not self-correction) — a real ' +
+      'fix, not a promotion.',
     validated: ['comisivo', 'apertura', 'concesivo'],
     constructed: ['cierre','revision','neutro','fantasia','sintoma',
       'autoridad','procedimiento','consecuencia','palabra'],

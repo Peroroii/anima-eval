@@ -684,6 +684,37 @@ en vez de una adición genuinamente evidenciada y segura ("datos" es
 demasiado genérica para acotarla con la misma confianza). La suite
 adversarial baja de 4/8 a 3/8.
 
+### Fase 2 (v0.23.0): ART/αNLI investigado y rechazado, hallazgo real de recall bajo
+
+Una crítica externa había recomendado ART/αNLI (Bhagavatula et al. 2020)
+para validar la capa abductiva. **Se investigó antes de usarlo, no se usó
+solo por la recomendación**: la tarea de ART/αNLI es elegir la hipótesis
+narrativa más plausible entre dos eventos de una historia (razonamiento
+de sentido común sobre causalidad física, ROCStories) — un sentido de
+"abducción" completamente distinto del que clasifica nuestra capa
+abductiva (contraste retórico vs. cláusula subordinada vs. contradicción
+directa, en diálogo de seguimiento de compromisos). Usarlo hubiera sido
+un error de categoría, no validación real — rechazado por esa razón, no
+por pereza.
+
+**Lo que sí sirvió: los propios datos de CaSiNo, sin bajar nada nuevo.**
+396 de los 1030 diálogos tienen **anotación humana por oración** de
+estrategias de persuasión — dato que ya teníamos y nunca habíamos usado.
+Tres etiquetas tienen correspondencia real (no forzada) con categorías
+propias: `elicit-pref`/`promote-coordination` con `apertura`,
+`showing-empathy` con `concesivo`. El resto (`self-need`, `other-need`,
+`no-need`, `vouch-fair`) no corresponde a nada que rastreemos — se
+excluyeron, no se forzaron.
+
+**Resultado, sin suavizar**: el recall es muy bajo en los tres pares
+(0,3%–2,4% contra el corpus completo). El chequeo manual de v0.15.0
+("7/8, 6/8 genuinos") solo había medido **precisión** sobre una muestra
+chica elegida a mano — nunca **recall** contra el universo completo de
+casos reales etiquetados. `REGISTRO_EVIDENCE` se actualizó para que
+"validated" diga exactamente eso: chequeado por precisión en una
+muestra, no por recall contra ground truth — una distinción que hacía
+falta dejar explícita, no implícita.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

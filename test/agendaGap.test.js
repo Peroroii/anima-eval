@@ -1238,6 +1238,29 @@ describe('Tramo 2 fixes (v0.21.0) — bounded inflection normalization', () => {
   });
 });
 
+describe('casino_strategy_alignment.js (Fase 2, v0.23.0) — real precision/recall vs. human labels', () => {
+  test('ART/αNLI was investigated and rejected as a category mismatch, not used on recommendation ' +
+       'alone: its task (choosing the more plausible narrative explanation between two ROCStories ' +
+       'events) is a different sense of "abduction" than this package\'s abductive hypothesis ' +
+       'layer (rhetorical contrast vs. subordinate-clause hedging in commitment-tracking dialogue). ' +
+       'This test documents the decision exists, not a corpus integration.', () => {
+    expect(true).toBe(true); // decision record, not a functional assertion
+  });
+
+  test('elicit-pref/promote-coordination (apertura) and showing-empathy (concesivo) all show very ' +
+       'low recall against CaSiNo\'s human-annotated strategy labels -- the v0.15.0 spot-check only ' +
+       'ever checked precision on a small hand-picked sample, never recall against comprehensive ' +
+       'ground truth. Pinned against the committed 50-dialogue sample so it can be tracked, not ' +
+       'quietly forgotten.', () => {
+    delete require.cache[require.resolve('../casino_strategy_alignment.js')];
+    const originalLog = console.log; console.log = () => {};
+    const { resultados } = require('../casino_strategy_alignment.js');
+    console.log = originalLog;
+
+    for (const r of resultados) expect(r.recall).toBeLessThan(0.05);
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [

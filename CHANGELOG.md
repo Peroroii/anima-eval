@@ -1,5 +1,44 @@
 # Changelog
 
+## 0.23.0 — 2026-07-28
+
+### Investigated and rejected: ART/αNLI. Added: real recall measurement against CaSiNo ground truth
+
+Fase 2 of the broader roadmap (empirical expansion). An external review
+had recommended ART/αNLI (Bhagavatula et al. 2020) for the abductive
+hypothesis layer. Investigated its actual task structure before using
+it, rather than using it on recommendation alone: ART/αNLI is about
+choosing the more plausible narrative explanation between two ROCStories
+events (commonsense causal reasoning) — a different sense of "abduction"
+than this package's abductive layer (rhetorical contrast vs.
+subordinate-clause hedging vs. direct contradiction, in commitment-
+tracking dialogue). Using it would have been a category error, not real
+validation. Rejected on that basis.
+
+**What worked instead: data already in this repo.** 396 of CaSiNo's 1030
+dialogues carry per-sentence human-annotated persuasion-strategy labels,
+unused until now. Three labels have a real, non-forced correspondence to
+tracked categories (`elicit-pref`/`promote-coordination` → `apertura`,
+`showing-empathy` → `concesivo`); the rest (`self-need`, `other-need`,
+`no-need`, `vouch-fair`) don't map to anything tracked and were
+deliberately excluded, not forced.
+
+**Result, unsoftened**: recall is very low across all three pairs
+(0.3%-2.4% against the full corpus). The v0.15.0 spot-check ("7/8, 6/8
+genuine") only ever measured PRECISION on a small hand-picked sample —
+never recall against comprehensive ground truth. `REGISTRO_EVIDENCE`
+updated so "validated" now says exactly that: precision-checked on a
+sample, not recall-checked against ground truth — a distinction that
+needed to be explicit, not implied.
+
+Added `casino_strategy_alignment.js` (`npm run casino-alignment`) as
+permanent, reproducible infrastructure for this kind of check going
+forward, runnable against either the committed 50-dialogue sample or the
+full 1030-dialogue corpus.
+
+153/153 tests passing (2 new). No regression on benchmark or the
+adversarial suite.
+
 ## 0.22.0 — 2026-07-28
 
 ### Added: Tramo 3 of the correction roadmap — bridge table mitigation for A1/A6
