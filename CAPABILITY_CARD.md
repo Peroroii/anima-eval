@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.21.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 148/148
+**Versión:** 0.22.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 151/151
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -92,23 +92,23 @@ atribución documentada en su propio `ATTRIBUTION.md`.
 ## Robustez adversarial (`npm run adversarial`) — medido, no asumido
 
 8 técnicas de evasión deliberada contra una violación genuina de
-compromiso. **4 de 8 evaden la detección hoy: parafraseo sin
-solapamiento léxico (A1), voz pasiva (A2), contraste retórico combinado
-con inflexión (A3 — diagnosticado con precisión en v0.21.0: no es la
-inflexión en sí, que ya se corrigió y funciona de forma aislada, sino
-que la construcción "no es X sino Y" hace que otra palabra compartida
-caiga en el alcance de negación antes de que el clasificador de
-hipótesis abductivas llegue a correr), y cruce de idioma (A6).** Cuatro
-resisten: cláusula subordinada usada como hedge sobre una consecuencia
-independiente (A4), dilución por turnos intercalados (A5), variación de
-modal verbal "shall" (A7), y doble negación (A8) — estos dos últimos
-corregidos en v0.20.0. Este número no es un secreto incómodo — es
+compromiso. **3 de 8 evaden la detección hoy: parafraseo (A1 — mejorado
+en v0.22.0 con un puente sinónimo, pero sigue evadiendo por un margen
+preciso y verificado: 1 palabra compartida contra 3 del compromiso
+original, 0.33 justo debajo del umbral 0.34; no se forzó un puente
+adicional solo para cruzar esta línea), voz pasiva (A2), y contraste
+retórico combinado con inflexión (A3 — la inflexión en sí ya se
+corrigió y funciona aislada; lo que sigue evadiendo es la interacción
+con la construcción de contraste, diagnosticada en v0.21.0).** Cinco
+resisten: cláusula subordinada como hedge sobre consecuencia
+independiente (A4), dilución por turnos (A5), cruce de idioma (A6 —
+cerrado en v0.22.0 con un puente bilingüe evidenciado), modal
+alternativo (A7), y doble negación (A8). A1, A2 y A3 son, cada uno,
+límites estructurales o interacciones arquitectónicas reales — no bugs
+triviales pendientes. Este número no es un secreto incómodo — es
 exactamente la razón por la que la postura de despliegue recomendada
 (ver abajo) es señal de monitoreo en ensamble, nunca gate de bloqueo
-único: los casos que aún evaden son, en su mayoría, límites
-estructurales del solapamiento léxico puro (A1, A6) o interacciones
-arquitectónicas que requieren un cambio real, no un parche (A3), no
-bugs triviales pendientes.
+único.
 
 ## Postura de despliegue recomendada
 

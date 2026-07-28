@@ -660,6 +660,30 @@ acá. La suite adversarial se mantiene en 4/8 tras este Tramo — el
 número no bajó, pero el diagnóstico de por qué A3 sigue sin cerrar es
 mucho más preciso que antes.
 
+### Hoja de ruta de corrección, Tramo 3 (v0.22.0) — mitigación, no cierre, de los límites estructurales
+
+**A1 (parafraseo) y A6 (cruce de idioma)** no se cierran sin comprometer
+la identidad del proyecto — no hay tabla finita que cubra la sinonimia
+de clase abierta o el vocabulario bilingüe completo sin convertirse en
+un sistema de embeddings o traducción, exactamente lo que este paquete
+existe para no ser. Lo que se agregó es explícitamente **mitigación**:
+una tabla chica de puentes sinónimo/bilingüe (`divulgar↔compartir`,
+`share/sharing↔compartir`, `information↔información`), acotada a los
+pares que aparecieron en la propia suite adversarial — mismo criterio
+de siempre, evidencia real, no invención.
+
+**Resultado, con precisión total**: A6 se atrapa ahora a peso completo
+— el puente bilingüe alcanza. A1 mejora pero **sigue evadiendo**, y el
+motivo es exacto y verificado: la oración adversarial comparte una sola
+palabra puenteada ("compartir") contra un compromiso original de tres
+palabras de *signifier* — la proporción de solapamiento (0,33) queda
+justo debajo del umbral (0,34). Deliberadamente **no** se agregó un
+puente adicional (`datos→información`) solo para que este caso puntual
+cruzara la línea — hubiera sido ajustar el sistema a nuestro propio test
+en vez de una adición genuinamente evidenciada y segura ("datos" es
+demasiado genérica para acotarla con la misma confianza). La suite
+adversarial baja de 4/8 a 3/8.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

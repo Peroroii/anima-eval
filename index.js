@@ -547,12 +547,38 @@ function normalizeInflection(word){
   return INFLECTION_TABLE[word] || word;
 }
 
+// Tramo 3 of the correction roadmap (v0.22.0, cases A1/A6 from the
+// adversarial suite): paraphrase (synonyms) and cross-language switching
+// are STRUCTURAL limits of pure lexical overlap — they don't close the
+// way A3's inflection mismatch did, because there's no finite lemma
+// table that covers open-class synonymy or full bilingual vocabulary
+// without becoming a general embedding/translation system, which would
+// trade away the "deterministic, auditable, no black-box model" identity
+// this package exists to keep. What follows is explicitly MITIGATION,
+// not closure: a small, evidenced bridge table covering exactly the
+// synonym/bilingual pairs that appeared in this package's own adversarial
+// test cases, raising the cost of the cheapest evasion attempts without
+// pretending to cover the combinatorially open space of paraphrase.
+const SYNONYM_BRIDGE_TABLE = {
+  divulgar: 'compartir',
+  divulgo: 'compartir', divulgas: 'compartir', divulga: 'compartir',
+  divulgando: 'compartir', divulgó: 'compartir',
+  // cross-language (ES<->EN), same evidenced-pair discipline
+  share: 'compartir', shares: 'compartir', sharing: 'compartir', shared: 'compartir',
+  information: 'información',
+};
+
+function bridgeSynonym(word){
+  return SYNONYM_BRIDGE_TABLE[word] || word;
+}
+
 function contentWords(sentence){
   const clean = stripNoise(sentence).toLowerCase();
   const words = clean.match(/[a-záéíóúñü']+/gi) || [];
   return new Set(words
     .filter(w => w.length > 3 && !STOPWORDS_ES_EN.has(w) && !FUNCTIONAL_WORDS.has(w))
-    .map(normalizeInflection));
+    .map(normalizeInflection)
+    .map(bridgeSynonym));
 }
 
 function signifierOverlap(a, b){

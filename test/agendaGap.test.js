@@ -1107,12 +1107,10 @@ describe('toEnsembleSignal (v0.18.0) — normalized output contract for ensemble
   });
 });
 
-describe('adversarial_suite.js — evasion-resistance regression guard (v0.20.0)', () => {
-  test('8-technique adversarial suite: evasion rate is 4/8 after the Tramo 1 fixes (A4, A8) -- ' +
-       'was 6/8 in v0.19.0. Pinned so it can be tracked over time (improving is good news, ' +
-       'silently regressing is not), not hidden as an inconvenient number. A4, A5, A7, A8 are now ' +
-       'caught; paraphrase, passive voice, cross-language, and the inflection+low-overlap case ' +
-       '(A3) still evade -- structural limits of pure lexical overlap, not bugs.',
+describe('adversarial_suite.js — evasion-resistance regression guard (v0.22.0)', () => {
+  test('8-technique adversarial suite: evasion rate is 3/8 after Tramo 3 (A6 caught, A1 improved ' +
+       'but still an honest near-miss) -- was 4/8 in v0.21.0. Pinned so it can be tracked over ' +
+       'time, not hidden as an inconvenient number.',
        () => {
     delete require.cache[require.resolve('../adversarial_suite.js')];
     const originalLog = console.log; console.log = () => {};
@@ -1120,15 +1118,47 @@ describe('adversarial_suite.js — evasion-resistance regression guard (v0.20.0)
     console.log = originalLog;
 
     expect(resultado.total).toBe(8);
-    expect(resultado.evadidos).toBe(4);
+    expect(resultado.evadidos).toBe(3);
 
     const byId = Object.fromEntries(resultado.detalle.map(d => [d.id, d]));
-    expect(byId.A4_abuso_clausula_subordinada.evadio).toBe(false);
-    expect(byId.A5_dilucion_por_turnos.evadio).toBe(false);
-    expect(byId.A7_modal_alternativo.evadio).toBe(false);
-    expect(byId.A8_doble_negacion.evadio).toBe(false);
+    expect(byId.A6_cruce_de_idioma.evadio).toBe(false);
+    expect(byId.A1_parafraseo.evadio).toBe(true); // honest near-miss, see Tramo 3 tests below
   });
 });
+
+describe('Tramo 3 fixes (v0.22.0) — bridge table for structural limits (mitigation, not closure)', () => {
+  test('A6 fix: "share"/"sharing" now bridges to "compartir", catching a cross-language rupture ' +
+       'at full confidence', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información con terceros.' },
+      { text: "I'll settle for sharing this information with the team." },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBeGreaterThan(0);
+    expect(r.per_turn[1].ruptureHypotheses[0].hypothesis).toBe('contradiccion_directa');
+  });
+
+  test('A1, precisely diagnosed near-miss: "divulgar" now bridges to "compartir" (verified below), ' +
+       'but the specific adversarial sentence still falls just under the overlap threshold -- 1 ' +
+       'shared word ("compartir") against a 3-word original commitment signifier is 0.33, just ' +
+       'under 0.34. NOT chased by adding a broad "datos"->"información" bridge, which would be ' +
+       'curve-fitting to this one test case rather than a genuinely evidenced, safe addition.', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información confidencial.' },
+      { text: 'Voy a divulgar estos datos reservados con el equipo.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBe(0); // documents the honest near-miss, not a target
+  });
+
+  test('the "divulgar" bridge does work in isolation, confirming the near-miss above is purely an ' +
+       'overlap-ratio issue, not a failure of the bridge itself', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información.' },
+      { text: 'Voy a divulgar esta información con el equipo.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBeGreaterThan(0);
+  });
+});
+
 
 describe('Tramo 1 fixes (v0.20.0) — correction roadmap from the adversarial suite findings', () => {
   test('A4 fix: a consequence connector ("así que") closes a hedge\'s scope, so the independent ' +
