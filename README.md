@@ -607,6 +607,35 @@ confiar en este instrumento como algo más que una señal de monitoreo en
 ensamble. El número queda pinneado con un test de regresión: si mejora,
 es una mejora real y medible; si empeora en silencio, el test lo atrapa.
 
+### Hoja de ruta de corrección, Tramo 1 (v0.20.0) — dos de cuatro evasiones cerradas
+
+Tras medir la robustez adversarial (v0.19.0), se clasificaron las 8
+técnicas encontradas por naturaleza real, no por igual: bugs de alcance
+corregibles sin ambigüedad (A4, A8), gaps de cobertura léxica acotados
+(A3), y límites estructurales del solapamiento léxico puro que no se
+cierran sin comprometer la identidad del proyecto (A1, A6). El Tramo 1
+ataca los dos primeros, con evidencia y sin sobregeneralizar:
+
+**A4 — descuento abductivo sensible al alcance.** `"No creo que X, así
+que voy a Y"` hacía que el hedge (`"no creo que"`) descontara también la
+cláusula independiente que seguía, aunque esa cláusula fuera una
+declaración activa e inequívoca. Corregido reconociendo conectores de
+consecuencia (`"así que"`, `"por lo tanto"`, `"so"`, `"therefore"`) como
+cierre del alcance del hedge — el mismo principio que NegEx ya aplica a
+conectores adversativos, extendido acá a conectores de consecuencia.
+
+**A8 — cancelación de doble negación.** `"No es que no vaya a
+compartir..."` — dos disparadores de negación deberían cancelarse, pero
+el módulo de alcance solo sabía responder "¿hay negación en algún
+lado?", no contar cuántas. Corregido contando disparadores superpuestos
+por palabra; una palabra compartida cubierta por un número **par** de
+disparadores cancela en vez de negar.
+
+**Resultado**: la suite adversarial baja de 6/8 a 4/8 evasiones, sin
+tocar el benchmark (idéntico: 1.000/0.900/0.947) ni ningún corpus real.
+Quedan A1 y A6 (límites estructurales, se mitigan pero no se cierran) y
+A3 (cobertura léxica acotada, Tramo 2) para las próximas fases.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

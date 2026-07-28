@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.20.0 — 2026-07-28
+
+### Fixed: Tramo 1 of the correction roadmap — A4 and A8 adversarial evasions closed
+
+After measuring adversarial robustness (v0.19.0, 6/8 evasion rate), the
+8 techniques were classified by real nature, not treated uniformly:
+unambiguous scope bugs (A4, A8), a bounded lexical-coverage gap (A3),
+and structural limits of pure lexical overlap that can't close without
+compromising the project's identity (A1, A6). This release fixes the
+first two, with evidence, without overgeneralizing.
+
+**A4 — scope-sensitive abductive discount.** `"No creo que X, así que
+voy a Y"` was letting the hedge discount the independent clause that
+followed it too, even when that clause was an unambiguous active
+statement. Fixed by recognizing consequence connectors (`así que`, `por
+lo tanto`, `so`, `therefore`) as closing the hedge's scope — the same
+principle NegEx already applies to adversative connectors, extended
+here to consequence ones.
+
+**A8 — double-negation cancellation.** `"No es que no vaya a
+compartir..."` — two negation triggers should cancel each other, but
+the scope module could only answer "is there negation anywhere", not
+count how many. Fixed with per-word overlapping-trigger counts; a shared
+word covered by an EVEN number of triggers cancels instead of negating.
+(A subtlety found along the way: requiring ALL shared words to agree on
+parity broke the common single-negation case, since a 6-token window
+legitimately doesn't reach every shared word in a longer sentence —
+fixed with a narrower rule: an explicit even-count>=2 on any shared word
+overrides, rather than requiring universal agreement.)
+
+**Result**: adversarial evasion rate drops from 6/8 to 4/8, with zero
+change to the benchmark (identical: 1.000/0.900/0.947) or any real
+corpus. A1 and A6 (structural limits, mitigate-not-close) and A3
+(bounded lexical coverage, Tramo 2) remain for future phases.
+
+145/145 tests passing (5 new).
+
 ## 0.19.0 — 2026-07-28
 
 ### Added: adversarial robustness suite — Fase 1 complete

@@ -647,29 +647,54 @@ const NEGATION_TRIGGER_WORDS = new Set(['no','nunca','jamás','not','never']);
 const SCOPE_TERMINATOR_WORDS = new Set(['pero','aunque','but','however','except','though']);
 const NEGATION_WINDOW = 6;
 
-function negationScopeIndices(words){
-  const scoped = new Set();
+// Returns a COUNT per word index of how many distinct negation triggers'
+// windows cover it — not just a binary "is it in scope" set. Found
+// necessary via the adversarial robustness suite (v0.19.0, case A8):
+// "No es que no vaya a compartir..." has TWO negation triggers whose
+// windows both cover "compartir" — a single binary scope set can't
+// distinguish that from ONE trigger covering it, so double negation
+// (which cancels, "no es que no X" == "X") was reading as negated.
+function negationScopeCounts(words){
+  const counts = new Array(words.length).fill(0);
   for (let i = 0; i < words.length; i++){
     if (!NEGATION_TRIGGER_WORDS.has(words[i])) continue;
     for (let j = i + 1; j < words.length && j < i + 1 + NEGATION_WINDOW; j++){
       if (SCOPE_TERMINATOR_WORDS.has(words[j])) break;
       if (words[j] === 'sin' && words[j+1] === 'embargo') break; // "sin embargo" terminates, isn't itself a trigger
-      scoped.add(j);
+      counts[j]++;
     }
   }
-  return scoped;
+  return counts;
 }
 
-// Is any word in targetWords (a Set) inside a negation scope in sentence s?
+// Is any word in targetWords (a Set) inside an ODD number of negation
+// scopes in sentence s? Odd = negated (one negation, the normal case);
+// even = cancelled (double negation — "no es que no X" affirms X), not
+// just "any negation trigger present anywhere before it".
 // targetWords should be the words actually SHARED between the current
 // sentence and the commitment being compared — polarity is judged on the
 // topic in common, not on the sentence as a whole.
 function isNegatedInScope(s, targetWords){
   if (!targetWords || !targetWords.size) return false;
   const words = s.toLowerCase().match(/[a-záéíóúñü']+/gi) || [];
-  const scoped = negationScopeIndices(words);
-  for (const idx of scoped) if (targetWords.has(words[idx])) return true;
-  return false;
+  const counts = negationScopeCounts(words);
+  // Two passes, not "all must agree": requiring every shared word to land
+  // on an odd count broke the common case (a negation window is only 6
+  // tokens, so a shared word further into a long sentence legitimately
+  // falls outside it while the near one doesn't — that's not a
+  // disagreement to resolve, it's normal). What actually distinguishes
+  // double negation is a SHARED word landing on an explicit even count
+  // >=2 (covered by two distinct triggers) — that specific signal
+  // overrides a same-sentence single-coverage reading elsewhere, rather
+  // than every word needing to agree.
+  let anyOdd = false, anyDoubleCancel = false;
+  for (let idx = 0; idx < words.length; idx++){
+    if (!targetWords.has(words[idx])) continue;
+    if (counts[idx] >= 2 && counts[idx] % 2 === 0) anyDoubleCancel = true;
+    else if (counts[idx] % 2 === 1) anyOdd = true;
+  }
+  if (anyDoubleCancel) return false;
+  return anyOdd;
 }
 
 function intersection(a, b){
@@ -694,7 +719,7 @@ function intersection(a, b){
 //   clausula_subordinada  a cognition verb + "que" ("no creo que X",
 //                         "i don't think that X") — the negation scopes
 //                         the belief-clause, not X itself. NegEx's token
-//                         window (see negationScopeIndices) cannot always
+//                         window (see negationScopeCounts) cannot always
 //                         tell this apart from local negation.
 //
 // Neither hypothesis PROVES the rupture is spurious — both lower
@@ -704,14 +729,33 @@ function intersection(a, b){
 // by default (contradiccion_directa) unless one of these patterns fires.
 const CONTRAST_PATTERN = /\bno es\b[^.,;!?]{0,40}\bsino\b|\bnot\b[^.,;!?]{0,40}\bbut\b/i;
 const COGNITION_QUE_PATTERN = /\b(creo|pienso|considero|creemos|pensamos)\b[^.,;!?]{0,15}\bque\b|\b(i think|i believe|i don't think|we think|we believe)\b/i;
+// Consequence connectors that close a hedge's scope before the clause
+// that follows it — found via the adversarial robustness suite (v0.19.0,
+// case A4): "No creo que X, así que voy a hacer Y" was getting its
+// second, independent, unambiguous clause discounted along with the
+// hedge, because the old check only asked "does this pattern appear
+// ANYWHERE in the sentence". A hedge governs what's inside it, not
+// everything that follows a consequence connector after it — the same
+// principle NegEx already applies to adversative connectors, extended
+// here to consequence ones for this specific abuse pattern.
+const HEDGE_SCOPE_TERMINATORS = /\b(así que|por lo tanto|entonces|so|therefore)\b/i;
 const HYPOTHESIS_WEIGHT_DISCOUNT = { contradiccion_directa: 1.0, contraste_retorico: 0.35, clausula_subordinada: 0.35 };
 
 function classifyRuptureHypothesis(currentSentence, priorSentence){
   const combined = currentSentence + ' ' + (priorSentence || '');
   if (CONTRAST_PATTERN.test(combined))
     return { hypothesis: 'contraste_retorico', confidence: 'baja' };
-  if (COGNITION_QUE_PATTERN.test(combined))
+
+  const cogMatch = COGNITION_QUE_PATTERN.exec(currentSentence);
+  if (cogMatch){
+    const afterHedge = currentSentence.slice(cogMatch.index + cogMatch[0].length);
+    if (!HEDGE_SCOPE_TERMINATORS.test(afterHedge))
+      return { hypothesis: 'clausula_subordinada', confidence: 'baja' };
+    // else: a consequence connector closes the hedge's scope before the
+    // rest of the sentence — fall through, don't discount based on it.
+  } else if (COGNITION_QUE_PATTERN.test(priorSentence || '')){
     return { hypothesis: 'clausula_subordinada', confidence: 'baja' };
+  }
   return { hypothesis: 'contradiccion_directa', confidence: 'alta' };
 }
 

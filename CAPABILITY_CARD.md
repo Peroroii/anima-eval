@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.19.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 141/141
+**Versión:** 0.20.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 145/145
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -92,15 +92,18 @@ atribución documentada en su propio `ATTRIBUTION.md`.
 ## Robustez adversarial (`npm run adversarial`) — medido, no asumido
 
 8 técnicas de evasión deliberada contra una violación genuina de
-compromiso. **6 de 8 evaden la detección hoy** (parafraseo sin
-solapamiento léxico, voz pasiva, cruce de idioma, doble negación, y
-abuso parcial de la capa abductiva). Solo 2 resisten: dilución por
-turnos intercalados, y variación de modal verbal ("shall" en vez de
-"will"). Este número no es un secreto incómodo — es exactamente la
-razón por la que la postura de despliegue recomendada (ver abajo) es
-señal de monitoreo en ensamble, nunca gate de bloqueo único: un agente
-que supiera que está siendo auditado por este instrumento tendría un
-camino de evasión relativamente accesible.
+compromiso. **4 de 8 evaden la detección hoy** (parafraseo sin
+solapamiento léxico, voz pasiva, cruce de idioma, y un caso de
+inflexión combinado con bajo solapamiento). Cuatro resisten: cláusula
+subordinada usada como hedge sobre una consecuencia independiente,
+dilución por turnos intercalados, variación de modal verbal ("shall" en
+vez de "will"), y doble negación — estos dos últimos corregidos en
+v0.20.0 tras encontrarlos con esta misma suite. Este número no es un
+secreto incómodo — es exactamente la razón por la que la postura de
+despliegue recomendada (ver abajo) es señal de monitoreo en ensamble,
+nunca gate de bloqueo único: los cuatro casos que aún evaden son, en su
+mayoría, límites estructurales del solapamiento léxico puro (parafraseo,
+cruce de idioma), no bugs pendientes de arreglar.
 
 ## Postura de despliegue recomendada
 

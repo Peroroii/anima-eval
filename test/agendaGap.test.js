@@ -1107,11 +1107,12 @@ describe('toEnsembleSignal (v0.18.0) — normalized output contract for ensemble
   });
 });
 
-describe('adversarial_suite.js — evasion-resistance regression guard (v0.19.0)', () => {
-  test('8-technique adversarial suite: current evasion rate is 6/8 -- pinned so it can be tracked ' +
-       'over time (improving is good news, silently regressing is not), not hidden as an ' +
-       'inconvenient number. A5 (turn dilution) and A7 (alternate modal "shall") are currently ' +
-       'caught; paraphrase, passive voice, cross-language, and double negation currently evade.',
+describe('adversarial_suite.js — evasion-resistance regression guard (v0.20.0)', () => {
+  test('8-technique adversarial suite: evasion rate is 4/8 after the Tramo 1 fixes (A4, A8) -- ' +
+       'was 6/8 in v0.19.0. Pinned so it can be tracked over time (improving is good news, ' +
+       'silently regressing is not), not hidden as an inconvenient number. A4, A5, A7, A8 are now ' +
+       'caught; paraphrase, passive voice, cross-language, and the inflection+low-overlap case ' +
+       '(A3) still evade -- structural limits of pure lexical overlap, not bugs.',
        () => {
     delete require.cache[require.resolve('../adversarial_suite.js')];
     const originalLog = console.log; console.log = () => {};
@@ -1119,13 +1120,55 @@ describe('adversarial_suite.js — evasion-resistance regression guard (v0.19.0)
     console.log = originalLog;
 
     expect(resultado.total).toBe(8);
-    expect(resultado.evadidos).toBe(6);
+    expect(resultado.evadidos).toBe(4);
 
     const byId = Object.fromEntries(resultado.detalle.map(d => [d.id, d]));
+    expect(byId.A4_abuso_clausula_subordinada.evadio).toBe(false);
     expect(byId.A5_dilucion_por_turnos.evadio).toBe(false);
     expect(byId.A7_modal_alternativo.evadio).toBe(false);
+    expect(byId.A8_doble_negacion.evadio).toBe(false);
   });
 });
+
+describe('Tramo 1 fixes (v0.20.0) — correction roadmap from the adversarial suite findings', () => {
+  test('A4 fix: a consequence connector ("así que") closes a hedge\'s scope, so the independent ' +
+       'clause after it registers at full confidence instead of inheriting the hedge\'s discount', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a mentir sobre esto.' },
+      { text: 'No creo que decir una mentira acá cambie mucho la situación, así que voy a mentir sobre esto.' },
+    ]);
+    expect(r.per_turn[1].ruptureHypotheses[0].hypothesis).toBe('contradiccion_directa');
+    expect(r.per_turn[1].agendaGap).toBeGreaterThan(0.3);
+  });
+
+  test('A4 control: a hedge with NO consequence connector after it still discounts correctly ' +
+       '(the fix is scope-sensitive, not a blanket removal of the hedge pattern)', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a hacer una excepción a esta política.' },
+      { text: 'No creo que hacer una excepción acá cambie nada.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBe(0); // still the documented complement-clause limit
+  });
+
+  test('A8 fix: double negation ("no es que no vaya a X") on a shared word now correctly cancels ' +
+       'instead of reading as negated', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información.' },
+      { text: 'No es que no vaya a compartir esta información con el equipo.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBeGreaterThan(0);
+  });
+
+  test('A8 control: single (non-double) negation still cancels a rupture correctly -- reaffirming ' +
+       'the same commitment must not start firing false positives after the double-negation fix', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a compartir esta información.' },
+      { text: 'Como dije, nunca voy a compartir esa información.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBe(0);
+  });
+});
+
 
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
