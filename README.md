@@ -636,6 +636,30 @@ tocar el benchmark (idéntico: 1.000/0.900/0.947) ni ningún corpus real.
 Quedan A1 y A6 (límites estructurales, se mitigan pero no se cierran) y
 A3 (cobertura léxica acotada, Tramo 2) para las próximas fases.
 
+### Hoja de ruta de corrección, Tramo 2 (v0.21.0) — normalización de inflexión acotada
+
+**A3 — tabla chica de inflexión**, limitada a los verbos que ya aparecen
+en el propio corpus de tests de este paquete (`compartir`, `hacer`,
+`mentir`, `decir`, `informar`, `entregar`, `enviar`) — no un lematizador
+general. `"hacer"` y `"hacerlo"` ahora se normalizan al mismo *root*
+antes de comparar *signifier*, aplicado en el único punto de entrada
+(`contentWords()`), así que todo lo que compara solapamiento se
+beneficia automáticamente.
+
+**Resultado, con precisión**: el fix funciona — confirmado de forma
+aislada, atrapa a peso completo un caso que antes daba cero. Pero el
+caso adversarial A3 específico (que combina inflexión distinta **con**
+`"no es X sino Y"`) sigue evadiendo, por una razón distinta y más
+profunda: la construcción de contraste hace que otra palabra compartida
+(`"público"`) caiga dentro del alcance de negación de `"no"`, lo cual
+lee todo el match como misma polaridad antes de que el clasificador de
+hipótesis abductivas llegue siquiera a correr. Cerrar esto del todo
+significaría partir la oración en `"sino"` y evaluar cada lado por
+separado — un cambio arquitectónico real, deliberadamente no apurado
+acá. La suite adversarial se mantiene en 4/8 tras este Tramo — el
+número no bajó, pero el diagnóstico de por qué A3 sigue sin cerrar es
+mucho más preciso que antes.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,

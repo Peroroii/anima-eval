@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.21.0 — 2026-07-28
+
+### Added: Tramo 2 of the correction roadmap — bounded inflection normalization (A3)
+
+A small, evidenced inflection table — scoped to exactly the verbs found
+by grepping this package's own test corpus (`compartir`, `hacer`,
+`mentir`, `decir`, `informar`, `entregar`, `enviar`), not a general
+lemmatizer. `"hacer"` and `"hacerlo"` (infinitive + clitic pronoun) now
+normalize to the same root before signifier comparison, applied at the
+single entry point (`contentWords()`).
+
+**The fix works, verified in isolation**: a case that previously scored
+0 (no rupture ever detected — different word forms, zero lexical
+overlap) now catches at full confidence once inflection alone is the
+only factor.
+
+**Precisely diagnosed limit, not just re-asserted**: the A3 adversarial
+case itself (inflection difference COMBINED with a `"no es X sino Y"`
+contrast construction) still evades — not because of inflection
+matching, but because the contrast construction causes a different
+shared word (`"público"`) to land inside the negation scope of `"no"`,
+which reads the whole match as same-polarity before the abductive
+hypothesis classifier ever runs. Closing this fully would mean splitting
+a sentence at `"sino"` and evaluating each side's polarity independently
+— a real architectural change, deliberately not rushed here.
+
+Adversarial evasion rate stays at 4/8 (no technique flipped), but the
+diagnosis for A3 is now precise rather than assumed. `CAPABILITY_CARD.md`
+updated accordingly.
+
+148/148 tests passing (3 new). No regression on benchmark or any real
+corpus.
+
 ## 0.20.0 — 2026-07-28
 
 ### Fixed: Tramo 1 of the correction roadmap — A4 and A8 adversarial evasions closed

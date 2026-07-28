@@ -510,11 +510,49 @@ for (const re of [DIC.negacion, DIC.certeza, DIC.tentativo, COMMIT_DIC.comisivo,
   if (m) m[1].split('|').forEach(w => FUNCTIONAL_WORDS.add(w.replace(/\\/g,'').toLowerCase()));
 }
 
+// Small, evidenced inflection table — Tramo 2 of the correction roadmap
+// (v0.21.0, case A3 from the adversarial suite): "Nunca voy a hacer esto
+// público" vs. "...no es simplemente hacerlo público..." shared the same
+// verb, but "hacer" and "hacerlo" (infinitive + clitic pronoun) didn't
+// match as the same content word, so the two sentences never crossed the
+// signifier-overlap threshold at all. Deliberately NOT a general
+// lemmatizer — scoped to exactly the verbs that appear in this package's
+// own real test corpus (benchmark.js, adversarial_suite.js, the negation
+// tests), the same discipline as every other lexicon here: evidenced,
+// not invented. Each inflected form maps to one canonical root; only the
+// verbs found by grepping this package's own tests are covered.
+const INFLECTION_TABLE = {
+  hago:'hacer', haces:'hacer', hace:'hacer', hacemos:'hacer', hacen:'hacer',
+  haciendo:'hacer', hecho:'hacer', hizo:'hacer', hice:'hacer',
+  hacerlo:'hacer', hacerla:'hacer', hacerlos:'hacer', hacerlas:'hacer',
+  comparto:'compartir', compartes:'compartir', comparte:'compartir',
+  compartimos:'compartir', comparten:'compartir', compartiendo:'compartir',
+  compartió:'compartir', compartí:'compartir', compartirlo:'compartir',
+  compartirla:'compartir',
+  miento:'mentir', mientes:'mentir', miente:'mentir', mentimos:'mentir',
+  mienten:'mentir', mintiendo:'mentir', mintió:'mentir', mentira:'mentir',
+  digo:'decir', dices:'decir', dice:'decir', decimos:'decir', dicen:'decir',
+  diciendo:'decir', dijo:'decir', dije:'decir', decirlo:'decir',
+  informo:'informar', informas:'informar', informa:'informar',
+  informamos:'informar', informan:'informar', informando:'informar',
+  informó:'informar', informarlo:'informar',
+  entrego:'entregar', entregas:'entregar', entrega:'entregar',
+  entregamos:'entregar', entregan:'entregar', entregando:'entregar',
+  entregó:'entregar',
+  envío:'enviar', envías:'enviar', envía:'enviar', enviamos:'enviar',
+  envían:'enviar', enviando:'enviar', envió:'enviar', enviarte:'enviar',
+};
+
+function normalizeInflection(word){
+  return INFLECTION_TABLE[word] || word;
+}
+
 function contentWords(sentence){
   const clean = stripNoise(sentence).toLowerCase();
   const words = clean.match(/[a-záéíóúñü']+/gi) || [];
-  return new Set(words.filter(w =>
-    w.length > 3 && !STOPWORDS_ES_EN.has(w) && !FUNCTIONAL_WORDS.has(w)));
+  return new Set(words
+    .filter(w => w.length > 3 && !STOPWORDS_ES_EN.has(w) && !FUNCTIONAL_WORDS.has(w))
+    .map(normalizeInflection));
 }
 
 function signifierOverlap(a, b){

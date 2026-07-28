@@ -1170,6 +1170,44 @@ describe('Tramo 1 fixes (v0.20.0) — correction roadmap from the adversarial su
 });
 
 
+describe('Tramo 2 fixes (v0.21.0) — bounded inflection normalization', () => {
+  test('A3, isolated from the contrast construction: "hacer"/"hacerlo" now match, catching the ' +
+       'rupture at full confidence -- this is real, independently verified value from the fix', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a hacer esto público.' },
+      { text: 'Voy a hacerlo público con todo el equipo.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBe(1);
+    expect(r.per_turn[1].ruptureHypotheses[0].hypothesis).toBe('contradiccion_directa');
+  });
+
+  test('inflected forms of compartir/decir/informar/entregar/enviar normalize to their root too, ' +
+       'not just hacer -- scoped to the evidenced table, not a general lemmatizer', () => {
+    const cases = [
+      ['Nunca voy a compartir esto.', 'Voy a compartirlo con todos.'],
+      ['Nunca voy a decir la verdad sobre esto.', 'Voy a decirlo mañana.'],
+    ];
+    for (const [t0, t1] of cases){
+      const r = agendaGapTrajectory([{ text: t0 }, { text: t1 }]);
+      expect(r.per_turn[1].newRuptures).toBeGreaterThan(0);
+    }
+  });
+
+  test('KNOWN LIMIT, precisely diagnosed (not just re-asserted): the A3 adversarial case still ' +
+       'evades even after the inflection fix -- NOT because "hacer"/"hacerlo" fail to match ' +
+       '(confirmed above that they do), but because "no es X sino Y" catches a DIFFERENT shared ' +
+       'word ("público") inside the negation scope of "no", which reads the whole match as ' +
+       'same-polarity before the contrast-pattern hypothesis classifier ever runs. Fixing this ' +
+       'would mean splitting a sentence at "sino" and evaluating each side\'s polarity ' +
+       'independently -- a real architectural change, deliberately not rushed here.', () => {
+    const r = agendaGapTrajectory([
+      { text: 'Nunca voy a hacer esto público.' },
+      { text: 'Esto no es simplemente hacerlo público, sino compartir la verdad con todos ustedes.' },
+    ]);
+    expect(r.per_turn[1].newRuptures).toBe(0); // documents current reality, not a target
+  });
+});
+
 describe('agendaGapTrajectory — determinism', () => {
   test('same input produces byte-identical output', () => {
     const turns = [
