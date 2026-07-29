@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo, structuralSignature, toEnsembleSignal } = require('../index.js');
+const { auditTranscript, extractCommitments, agendaGapTrajectory, computeSignalVector, poderDiscursivo, structuralSignature, toEnsembleSignal, discursoLexico } = require('../index.js');
 
 const mk = (speaker, text) => ({ speaker, text });
 
@@ -418,12 +418,13 @@ describe('computeSignalVector — the five remaining σ(t) producers', () => {
     expect(sv[0].symptom).toBeGreaterThan(0);
   });
 
-  test('output shape is ready to feed anima-core Engine.step() directly (one object per agent turn, six keys)', () => {
+  test('output shape is ready to feed anima-core Engine.step() directly (one object per agent ' +
+       'turn, seven keys -- discurso added v0.32.0, P4 of the architecture roadmap)', () => {
     const turns = [{ text: 'Voy a mandar el mail.' }, { text: 'Listo, ya lo mandé.' }];
     const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
     expect(sv.length).toBe(2);
     for (const s of sv) expect(Object.keys(s).sort()).toEqual(
-      ['agendaGap','aperture','closure','elaboration','fantasy','symptom'].sort());
+      ['agendaGap','aperture','closure','discurso','elaboration','fantasy','symptom'].sort());
   });
 
   test('KNOWN FINDING: all four lexical signals (aperture/closure/fantasy/symptom) score zero across ' +
@@ -1561,6 +1562,51 @@ describe('sintoma — windowed pattern added (v0.31.0), evidenced from a real AI
     let fires = false;
     for (const reg of Object.values(r.registro_coverage)) if ((reg.sintoma||0)>0) fires = true;
     expect(fires).toBe(false);
+  });
+});
+
+describe('discursoLexico — P4 of the architecture roadmap (v0.32.0), honestly asymmetric', () => {
+  test('"not fair" fires as historica -- checked 33 real hits in CaSiNo, 15/15 spot-checked genuine', () => {
+    expect(discursoLexico('What you are asking for is not fair.')).toBe('historica');
+  });
+
+  test('"i don\'t agree" and "why should i" also fire as historica -- real but thin evidence (1-2 ' +
+       'hits each), kept because what is there is genuine', () => {
+    expect(discursoLexico("No, I don't agree with that.")).toBe('historica');
+    expect(discursoLexico('Why should I go first?')).toBe('historica');
+  });
+
+  test('amo, universitario, and analista are NEVER returned -- checked broad cues for all four ' +
+       'discourses against three real corpora before writing a single trigger: amo\'s specific ' +
+       'markers ("end of discussion", "that\'s final") appeared 0-1 times total (a real absence, ' +
+       'not weak evidence); universitario\'s theoretically correct marker ("because") was too ' +
+       'generic to discriminate (486-1495 hits per corpus, fires on any reasoned statement ' +
+       'regardless of discourse position); analista had 0-3 hits across all three (none were ' +
+       'therapeutic/interpretive dialogue). An empty trigger list would be dishonest padding, so ' +
+       'these three simply never fire, rather than firing on weak or generic matches', () => {
+    const noSignal = [
+      'Because I need it for my family, that is the reason.',
+      'You must do this now, that is final.',
+      'What makes you think that? Tell me more.',
+      'Hola, ¿cómo estás?',
+    ];
+    for (const text of noSignal){
+      const result = discursoLexico(text);
+      expect(['amo','universitario','analista']).not.toContain(result);
+    }
+  });
+
+  test('plain text with no discourse markers returns null, not a guessed default', () => {
+    expect(discursoLexico('Voy a mandar el mail mañana.')).toBe(null);
+    expect(discursoLexico('')).toBe(null);
+  });
+
+  test('wired into computeSignalVector as the real discurso field of σ(t) -- the bridge ' +
+       'anima-core\'s discurso × arquetipo crossing (v0.5.0) has been missing on the anima-eval ' +
+       'side since it shipped: discursoDominante() only ever sampled from a prior for simulation', () => {
+    const turns = [{ text: "That's not fair, I need more water than that." }];
+    const sv = computeSignalVector(turns, agendaGapTrajectory(turns));
+    expect(sv[0].discurso).toBe('historica');
   });
 });
 

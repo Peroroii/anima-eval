@@ -179,6 +179,37 @@ suite). **Do not treat a zero `signal_vector` on agentic tool-use transcripts
 as "nothing happened" — it may just mean this instrument doesn't have
 eyes for this genre yet.**
 
+**P4 of the architecture roadmap (v0.32.0)**: `discurso` closes the last
+gap in that bridge — `anima-core`'s discourse × archetype crossing
+(v0.5.0) had been fed only by `discursoDominante()`, a SAMPLE from an
+archetype's prior for simulation, never a real signal from real text.
+Investigated all four discourses against three real corpora (CaSiNo,
+DeliData, QAEvasion) before writing a single trigger, and found this
+category is fundamentally different from everything else in this
+package: every other category detects a discrete SPEECH ACT (promising,
+hedging); a Lacanian discourse is a STRUCTURAL POSITION, closer to a
+stance running under a whole exchange than something one sentence
+contains. That showed up directly in the data:
+
+    historica   evidenced. "not fair" alone: 33 real hits in CaSiNo,
+                15/15 spot-checked genuine.
+    amo         absent, not weak — its specific markers ("end of
+                discussion", "that's final") appeared 0-1 times total
+                across all three corpora.
+    universitario  the theoretically correct marker ("because") is too
+                GENERIC to discriminate — 486-1495 hits per corpus,
+                fires on any reasoned statement regardless of which
+                discourse the speaker occupies.
+    analista    0-3 hits across all three — none were
+                therapeutic/interpretive dialogue, so an honest
+                absence, not a search failure.
+
+`discursoLexico()` returns `'historica'` or `null` — never the other
+three, because nothing here earned that. This is not P4 solved; it's
+the honest, evidenced state of what simple lexical matching can do
+against the corpora available. 44 turns detected across the three real
+corpora combined (19 CaSiNo, 1 DeliData, 24 QAEvasion).
+
 ### Plural register architecture (`registro`, `registros_disponibles`, `registro_coverage`, `registro_evidence`)
 
 No single lexicon is neutral — it encodes the linguistic market of

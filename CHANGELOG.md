@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.32.0 — 2026-07-29
+
+### Added: discurso field in signal_vector — P4 of the architecture roadmap, honestly asymmetric
+
+Closes the bridge `anima-core`'s discourse × archetype crossing (v0.5.0)
+left half-built on the `anima-eval` side: until now discourse was only
+ever sampled from an archetype's prior for simulation, never inferred
+from real text.
+
+Investigated all four discourses against three real corpora (CaSiNo,
+DeliData, QAEvasion) before writing a single trigger, and found this
+category is fundamentally different from every other one in this
+package: every other category detects a discrete speech act
+(promising, hedging); a Lacanian discourse is a structural position,
+closer to a stance running under a whole exchange than something one
+sentence contains.
+
+**historica**: evidenced. "not fair" alone: 33 real hits in CaSiNo,
+15/15 spot-checked genuine.
+**amo**: absent, not weak -- specific markers ("end of discussion",
+"that's final") appeared 0-1 times total across all three corpora.
+**universitario**: the theoretically correct marker ("because") is too
+generic to discriminate -- 486-1495 hits per corpus, fires on any
+reasoned statement regardless of discourse position.
+**analista**: 0-3 hits across all three -- none were
+therapeutic/interpretive dialogue, an honest absence.
+
+`discursoLexico()` returns `'historica'` or `null` -- never the other
+three, because nothing here earned that. Not presented as P4 solved;
+the honest, evidenced state of what simple lexical matching achieves
+against the corpora available. 44 turns detected across the three real
+corpora combined.
+
+182/182 tests passing (5 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.31.0 — 2026-07-29
 
 ### Added: second attempt at a corpus for sintoma — a real pattern found, still not promoted

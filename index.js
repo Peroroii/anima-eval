@@ -1158,6 +1158,75 @@ function agendaGapTrajectory(agentTurns){
   };
 }
 
+// ── Discourse signal (P4 of the architecture roadmap) ──
+// anima-core's discurso_arquetipo.js (v0.4.0-0.5.0) built the OTHER
+// half of this bridge: a discourse×archetype crossing wired into the
+// engine's equations, but fed only by discursoDominante() (a SAMPLE
+// from the archetype's prior, for simulation) or, in an exploratory
+// HTML demo built separately, an unvalidated lexical sketch. Neither is
+// a real signal from real text. This is the first attempt at that,
+// inside anima-eval where it belongs, with the same evidence discipline
+// as everything else in this file — which surfaced something genuinely
+// different from every other category here.
+//
+// Every other category in this package detects a discrete SPEECH ACT
+// (promising, hedging, taking an oath) — a local, bounded thing a
+// sentence either does or doesn't do. A Lacanian discourse is a
+// STRUCTURAL POSITION — closer to a stance running under an entire
+// exchange than a thing one sentence contains. That mismatch showed up
+// directly in the data, not as a hunch: checked broad lexical cues for
+// all four discourses against CaSiNo + DeliData + QAEvasion (real
+// negotiation/deliberation/interview corpora) before writing a single
+// trigger.
+//
+//   historica ($ in the agent position — contesting the other,
+//   grievance): genuinely evidenced. "not fair" alone: 33 real hits in
+//   CaSiNo, 15/15 spot-checked genuine (100% on the sample) -- a clean,
+//   specific marker. "i don't agree" / "why should i": real but thin
+//   (1-2 hits each), kept because what's there is genuine.
+//
+//   amo (S1 in the agent position — command without justification):
+//   its SPECIFIC markers ("end of discussion", "that's final", "no
+//   other way") appear 0-1 times across all three corpora combined —
+//   not weak evidence, an absence. Makes sense on reflection: flat
+//   unilateral command is rare in cooperative negotiation, casual
+//   deliberation, or a political interview register. NOT included —
+//   an empty trigger list would be dishonest padding, not a category.
+//
+//   universitario (S2 in the agent position — explanation,
+//   justification): the theoretically correct marker ("because") is
+//   extremely common (486-1495 hits per corpus) but TOO GENERIC to be
+//   useful here specifically — it fires on essentially any reasoned
+//   statement regardless of which discourse position the speaker
+//   occupies, so it doesn't discriminate, even though each individual
+//   match is a genuine justification. A precision problem at the
+//   system level, not at any single match. NOT included pending a more
+//   specific marker than "stated a reason for something."
+//
+//   analista (a in the agent position — returns the question, minimal
+//   intervention): 0-3 hits across all three corpora. None of them are
+//   therapeutic/interpretive dialogue, so this is an honest absence,
+//   not a search failure — this discourse's markers may simply need a
+//   corpus this package doesn't have access to.
+//
+// Net result: ONE of four discourses has real, usable lexical
+// evidence. `discursoLexico()` returns 'historica' or null — never
+// 'amo'/'universitario'/'analista', because nothing here earned that.
+// This is NOT presented as solving P4; it's the honest, evidenced
+// state of what's achievable with simple lexical matching against the
+// corpora available. A real classifier for the other three discourses
+// would need either a fundamentally different method or a corpus nobody
+// has found yet.
+const DISCOURSE_LEXICO_DIC = {
+  historica: /\b(not fair|i don't agree|i dont agree|why should i)\b/i,
+};
+
+function discursoLexico(text){
+  const clean = stripNoise(text || '');
+  if (DISCOURSE_LEXICO_DIC.historica.test(clean)) return 'historica';
+  return null;
+}
+
 // ── Remaining σ(t) producers: aperture, closure, fantasy, elaboration, symptom ──
 // Until this addition, agenda_gap (d_agenda) was the ONLY one of the six
 // anima-core signal inputs with a real producer — the manifesto's own
@@ -1202,6 +1271,7 @@ function computeSignalVector(agentTurns, agendaGapResult){
       elaboration: +elaboration.toFixed(3),
       symptom: sentenceFraction(text, SIGVEC_DIC.sintoma),
       agendaGap: perTurn.agendaGap || 0,
+      discurso: discursoLexico(text),
     };
   });
 }
@@ -1539,4 +1609,5 @@ function toEnsembleSignal(transcript, opts = {}){
 }
 
 module.exports = { auditTranscript, auditCollusion, structuralSignature, rigidity, rigidityDetailed,
-  agendaGapTrajectory, extractCommitments, computeSignalVector, poderDiscursivo, toEnsembleSignal };
+  agendaGapTrajectory, extractCommitments, computeSignalVector, poderDiscursivo, toEnsembleSignal,
+  discursoLexico };
