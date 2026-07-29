@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.31.0 — 2026-07-29
+
+### Added: second attempt at a corpus for sintoma — a real pattern found, still not promoted
+
+Last time, the right corpus for `sintoma` (Scruples/AITA) was
+identified but unreachable due to this environment's network
+restrictions. This time found a direct GitHub mirror --
+`Andrew-Sai/reddit-aita`, 957 real r/AmItheAsshole posts -- but with
+**no declared license**, unlike the other four corpora this project
+uses (Apache 2.0, MIT, CC BY 4.0). Used strictly for **validating the
+trigger**, not committed as a fixture.
+
+**Bare `"i shouldn't have"` was tested and rejected**: of 10 real hits
+read, only 30-40% were genuine -- most were **reported speech**
+("my friends told me I shouldn't have..."), not the author's own
+admission. The full pattern -- "shouldn't have ... but" (windowed
+proximity, not a loose phrase) -- fixed this: 5 of 6 real hits genuine
+(83%). Added.
+
+**Result, unsoftened**: 8 new hits in AITA, ~9 total across the four
+corpora now checked. Still well below the bar this project used for
+everything else it promoted (autoridad's 224, cierre's 147) --
+`sintoma` stays `constructed`. Real improvement, reported as exactly
+what it is.
+
+177/177 tests passing (3 new). No regression on benchmark, adversarial
+suite, or any real corpus.
+
 ## 0.30.0 — 2026-07-28
 
 ### Added: cierre validated. Documented: sintoma stays honestly open

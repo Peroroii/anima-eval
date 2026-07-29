@@ -1,6 +1,6 @@
 # ANIMA / anima-eval — Capability Card
 
-**Versión:** 0.30.0 · **Última corrida de regresión completa:** 2026-07-28 · **Tests:** 174/174
+**Versión:** 0.31.0 · **Última corrida de regresión completa:** 2026-07-29 · **Tests:** 177/177
 
 Este documento existe para que un equipo de seguridad pueda decidir, en
 cinco minutos y sin leer código, si esta señal sirve para lo que
@@ -88,6 +88,16 @@ atribución documentada en su propio `ATTRIBUTION.md`.
   dependientes del orden de ejecución (estado oculto vía `lastIndex`) —
   corregido y blindado con un escaneo estático que prohíbe esa
   combinación en todo el código fuente, no solo en el caso que falló.
+
+## Fase 2, continuación — segundo intento en `sintoma`, sigue sin promover
+
+Corpus AITA/r-AmItheAsshole (957 posts, sin licencia declarada — usado
+solo para validar, no comiteado como fixture). `"i shouldn't have"`
+sola: 30-40% precisión, mayoría discurso reportado — descartada. Patrón
+completo `"shouldn't have ... but"` (con ventana): 83% precisión (5/6).
+Agregado. Resultado: ~9 hits totales en 4 corpus — sigue muy por debajo
+de la vara del proyecto (autoridad 224, cierre 147). `sintoma` sigue
+`constructed`.
 
 ## Fase 2, continuación — `cierre` validada, `sintoma` sigue abierta con honestidad
 

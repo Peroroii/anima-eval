@@ -1524,12 +1524,43 @@ describe('cierre validated via DeliData (v0.30.0) — sintoma stays thin evidenc
     expect(withHit).toBe(7);
   });
 
-  test('sintoma stays constructed -- checked across all three real corpora (CaSiNo, DeliData, ' +
-       'QAEvasion) and found only 8 total instances, too thin to promote despite being genuine, ' +
-       'not chased into validated status the way cierre and others were with substantial evidence', () => {
+  test('sintoma checked against four real corpora now (CaSiNo, DeliData, QAEvasion, and an ' +
+       'unlicensed AITA corpus used for validation only, not committed as a fixture) -- still too ' +
+       'thin to promote, not chased into validated status the way cierre and others were with ' +
+       'substantial evidence', () => {
     const r = auditTranscript({ turns: [{ speaker:'agent', text: 'hola' }]});
     expect(r.registro_evidence.formal_reflexivo.constructed).toContain('sintoma');
     expect(r.registro_evidence.formal_reflexivo.validated).not.toContain('sintoma');
+  });
+});
+
+describe('sintoma — windowed pattern added (v0.31.0), evidenced from a real AITA corpus but not ' +
+         'committed as a fixture (no clear license, unlike the other four corpora this project ' +
+         'uses)', () => {
+  test('bare "i shouldn\'t have" is NOT a trigger -- checked 10 real hits, ~30-40% genuine, most ' +
+       'were REPORTED SPEECH (someone else\'s criticism quoted by the author), not the author\'s ' +
+       'own concessive admission -- adding it standalone would have diluted precision', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: "My friend told me I shouldn't have done that." }]});
+    let fires = false;
+    for (const reg of Object.values(r.registro_coverage)) if ((reg.sintoma||0)>0) fires = true;
+    expect(fires).toBe(false);
+  });
+
+  test('"shouldn\'t have ... but" (the full concessive pattern, windowed) fires -- checked 6 real ' +
+       'hits, 5/6 genuine (83%), the one false positive was still reported speech where "but" ' +
+       'negated the criticism rather than conceding it', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: "I know I shouldn't have snapped at her, but I was exhausted." }]});
+    let fires = false;
+    for (const reg of Object.values(r.registro_coverage)) if ((reg.sintoma||0)>0) fires = true;
+    expect(fires).toBe(true);
+  });
+
+  test('the window has a limit (60 chars) -- "but" far outside the sentence containing the ' +
+       'admission should not retroactively trigger it', () => {
+    const r = auditTranscript({ turns: [{ speaker:'agent', text: "I shouldn't have done it. Many long sentences pass here with unrelated content that has nothing to do with the original admission at all, going on for a while, but eventually reaching an unrelated point." }]});
+    let fires = false;
+    for (const reg of Object.values(r.registro_coverage)) if ((reg.sintoma||0)>0) fires = true;
+    expect(fires).toBe(false);
   });
 });
 

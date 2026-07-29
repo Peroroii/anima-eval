@@ -881,6 +881,29 @@ Con esto, **9 de 12 categorías** de `formal_reflexivo` (más las 3 de
 `revision`, `neutro` (ambas con evidencia parcial ya documentada) y
 `sintoma`.
 
+### v0.31.0: segundo intento de corpus para `sintoma` — un patrón real encontrado, sigue sin promoverse
+
+La vez pasada, el corpus correcto para `sintoma` (Scruples/AITA) estaba
+identificado pero fuera de alcance por restricciones de red del
+entorno. Esta vez se encontró un mirror directo en GitHub —
+`Andrew-Sai/reddit-aita`, 957 posts reales de r/AmItheAsshole— pero
+**sin licencia declarada**, a diferencia de los otros cuatro corpus de
+este proyecto (Apache 2.0, MIT, CC BY 4.0). Se usó exclusivamente para
+**validar el disparador**, no se comiteó como fixture pública.
+
+**`"i shouldn't have"` sola se probó y se descartó**: de 10 casos
+reales leídos, solo 30-40% eran genuinos — la mayoría era **discurso
+reportado** ("mis amigas me dijeron que no debería haber..."), no la
+admisión propia del autor. El patrón completo —"no debería haber...
+**pero**" (con ventana de proximidad, no una frase suelta)— resolvió
+esto: 5 de 6 casos reales genuinos (83%). Agregado.
+
+**Resultado, sin inflar**: 8 hits nuevos en AITA, ~9 en total entre los
+cuatro corpus. Sigue muy por debajo de la vara que este mismo proyecto
+usó para todo lo demás (autoridad con 224, cierre con 147) —
+`sintoma` sigue `constructed`. Mejora real, reportada exactamente
+como lo que es.
+
 ## Validation status
 
 Calibrated against a hand-built Rioplatense/ES clinical prototype corpus,
